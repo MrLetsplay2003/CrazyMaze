@@ -1,0 +1,9 @@
+main: me.mrletsplay.crazymaze.main.Main
+author: MrLetsplay
+name: CrazyMaze
+version: 1.5
+softdepend: [MrCore_BukkitImpl]
+
+commands:
+     crazymaze:
+       aliases: [cm]

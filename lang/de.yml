@@ -1,0 +1,75 @@
+command: 
+  already-editing: %prefix% §cDu editierst bereits eine Arena
+  arena-already-exists: %prefix% §cDiese Arena gibt es schon!
+  arena-created: %prefix% §aArena erstellt
+  arena-deleted: %prefix% §cArena §6%arena% erfolgreich gelöscht
+  arena-doesnt-exist: %prefix% §cDiese Arena gibt es nicht!
+  arena-is-being-edited: %prefix% §cDiese Arena wird momentan editiert
+  arena-saved: %prefix% §aArena gespeichert
+  changes-discarded: %prefix% §cÄnderungen verworfen
+  console: %prefix% §cDie Konsole kann das nicht
+  kick: 
+    kicked: %prefix% §aDu hast den Spieler §7%player% §aerfolgreich aus seiner Runde gekickt
+    player-not-ingame: %prefix% §cDieser Spieler ist momentan in keiner Runde
+    player-not-online: %prefix% §cDiesen Spieler gibt es nicht/ist nicht online
+  list: 
+    entry: - %name% §7(%size%x, Powerups: %powerups%)
+    title: %prefix% §aAlle Arenen:
+  no-permission: %prefix% §cKeine Rechte
+  not-editing: %prefix% §cDu editierst momentan keine Arena
+  now-editing: %prefix% §aDu editierst nun die Arena §7%arena%
+  properties-imported: %prefix% §aEinstellungen von §7%arena% §aimportiert
+  set: 
+    defaultmainlobby: %prefix% §aStandard-Mainlobby gesetzt
+    lobby: %prefix% §aLobby gesetzt
+    mainlobby: %prefix% §aMainlobby gesetzt
+    max-players: %prefix% §aMaximale Spieler auf §7%num% §agesetzt
+    min-players: %prefix% §aMinimale Spieler auf §7%num% §agesetzt
+    more-players: %prefix% §cDu kannst nicht < 1 Spieler einstellen
+    more-size: %prefix% §cDu kannst keine Größe < 3 einstellen
+    onwin: %prefix% §aOnWin-Command auf §7/%cmd% §agesetzt
+    powerups: %prefix% §aEnablePowerups auf §7%state% §agesetzt
+    sign: %prefix% §aSchild gesetzt
+    sign-not-looking: %prefix% §cDu musst ein Schild anschauen, um es festzulegen
+    size: %prefix% §aGröße auf §7%num% §agesetzt
+    too-many-players: %prefix% §cMinimale Spieler kann nicht > als maximale Spieler sein
+  setup-incomplete: %prefix% §cArenasetup unvollständig. Es fehlt: %missing%
+  start: 
+    already-running: %prefix% §cDiese Runde läuft bereits
+    already-starting: %prefix% §cDiese Runde startet bereits
+    not-enough-players: %prefix% §cEs befinden sich nicht genug Spieler in dieser Runde
+    skipped: %prefix% §aCountdown übersprungen
+gui: 
+  game-duration: 
+    10-mins: §710 Minuten
+    20-mins: §720 Minuten
+    5-mins: §75 Minuten
+    infinite: §7Kein Zeitlimit
+  vote-game-duration: §bVote für Spieldauer
+ingame: 
+  arena-loading: 
+    1: %prefix% §6Arena wird geladen...
+    2: %prefix% §6Erwartete Ladezeit: %time%
+  cannot-pass: %prefix% §cDu kannst nicht durch diese Wand gehen
+  countdown: 
+    end: 
+      minutes: %prefix% §6Die Runde endet in §7%countdown% §6Minute(n)
+      seconds: %prefix% §6Die Runde endet in §7%countdown% §6Sekunde(n)
+    start: %prefix% §aDie Runde startet in §7%countdown% §aSekunde(n)
+    go: %prefix% §aLos!
+  countdown-stopped: %prefix% §cDer Countdown wurde gestoppt
+  end: 
+    tie: %prefix% §cSieht so aus, als hätte keiner gewonnen. §6Gleichstand!
+    win: %prefix% §7%winner% §ahat die Runde gewonnen!
+  kick-edit: %prefix% §cDu wurdest aus der Runde geworfen, da die Arena editiert wird
+  kick-everyone-left: %prefix% §cDu wurdest aus der Runde geworfen, da alle deine Gegner geleftet sind
+  kick-restart: %prefix% §cDu wurdest aus der Runde geworfen, da das Plugin neustartet
+  player-joined: %prefix% §7%player% §ahat die Runde betreten §8[§7%currplayers%/%maxplayers%§8]
+  player-left: %prefix% §7%player% §chat die Runde verlassen §8[§7%currplayers%/%maxplayers%§8]
+other: 
+  already-ingame: %prefix% §cDu bist schon in einer Runde
+  game-full: %prefix% §cDiese Runde ist bereits voll
+  game-left: %prefix% §aDu hast die Runde erfolgreich verlassen
+  game-restarting: %prefix% §cDiese Runde startet momentan neu
+  game-running: %prefix% §cDiese Runde läuft bereits
+  not-ingame: %prefix% §cDu bist momentan in keiner Runde
