@@ -1,29 +1,33 @@
 package me.mrletsplay.crazymaze.main;
 
-import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import me.mrletsplay.crazymaze.arena.Arena;
 import me.mrletsplay.crazymaze.arena.ArenaLayout;
-import me.mrletsplay.crazymaze.main.Game.VotingData;
+import me.mrletsplay.crazymaze.game.Game;
+import me.mrletsplay.crazymaze.game.Games;
+import me.mrletsplay.crazymaze.game.Game.VotingData;
+import me.mrletsplay.mrcore.bukkitimpl.ItemUtils;
 import me.mrletsplay.mrcore.bukkitimpl.gui.GUI;
 import me.mrletsplay.mrcore.bukkitimpl.gui.GUIBuilder;
 import me.mrletsplay.mrcore.bukkitimpl.gui.GUIElementAction;
 import me.mrletsplay.mrcore.bukkitimpl.gui.StaticGUIElement;
 import me.mrletsplay.mrcore.bukkitimpl.gui.event.GUIElementActionEvent;
+import me.mrletsplay.mrcore.bukkitimpl.versioned.VersionedDyeColor;
+import me.mrletsplay.mrcore.bukkitimpl.versioned.VersionedMaterial;
 
 public class GUIs {
-
+	
 	public static GUI getVotingGUI(Arena a) {
 		GUIBuilder builder = new GUIBuilder(Config.votingInvName, 3);
 		
 		for(int i = 0; i < 3*9; i++) {
-			builder.addElement(i, new StaticGUIElement(Tools.createItem(Material.STAINED_GLASS_PANE, 1, 0, "�0")));
+			builder.addElement(i, new StaticGUIElement(ItemUtils.createItem(VersionedMaterial.WHITE_STAINED_GLASS_PANE, 1, "§0")));
 		}
 
-		builder.addElement(10, new StaticGUIElement(Tools.createItem(Material.BRICK, 1, 0, Config.getMessage("gui.vote-maze-layout"), a.getLayouts().size()==1?Config.getMessage("gui.voting-maze-disabled"):""))
+		builder.addElement(10, new StaticGUIElement(ItemUtils.createItem(Material.BRICK, 1, 0, Config.getMessage(Message.GUI_VOTE_MAZE_LAYOUT), a.getLayouts().size() == 1 ? Config.getMessage(Message.GUI_VOTING_MAZE_DISABLED):""))
 			.setAction(new GUIElementAction() {
 				
 				@Override
@@ -39,7 +43,7 @@ public class GUIs {
 				}
 			}));
 		
-		builder.addElement(13, new StaticGUIElement(Tools.createItem(Material.DIODE, 1, 0, Config.getMessage("gui.vote-game-duration")))
+		builder.addElement(13, new StaticGUIElement(ItemUtils.createItem(VersionedMaterial.REPEATER, 1, Config.getMessage(Message.GUI_VOTE_GAME_DURATION)))
 				.setAction(new GUIElementAction() {
 					
 					@Override
@@ -58,13 +62,13 @@ public class GUIs {
 		GUIBuilder builder = new GUIBuilder(Config.choiceInvName, 3);
 		
 		VotingData d = g.getVotingData(p);
-		ItemStack gP = Tools.createItem(Material.STAINED_GLASS_PANE, 1, 0, "�0");
+		ItemStack gP = ItemUtils.createItem(VersionedMaterial.WHITE_STAINED_GLASS_PANE, 1, "§0");
 		
 		for(int i = 0; i < 3*9; i++) {
 			builder.addElement(i, new StaticGUIElement(gP));
 		}
 		
-		builder.addElement(10, new StaticGUIElement(Tools.createItem(Material.DIODE, d.gameTime==5?2:1, 0, Config.getMessage("gui.game-duration.5-mins"))).setAction(new GUIElementAction() {
+		builder.addElement(10, new StaticGUIElement(ItemUtils.createItem(VersionedMaterial.REPEATER, d.gameTime==5?2:1, Config.getMessage(Message.GUI_GAME_DURATION_5_MINUTES))).setAction(new GUIElementAction() {
 			
 			@Override
 			public void onAction(GUIElementActionEvent event) {
@@ -74,7 +78,7 @@ public class GUIs {
 				p.openInventory(GUIs.getGameTimeInv(p, g).getForPlayer(p));
 			}
 		}));
-		builder.addElement(12, new StaticGUIElement(Tools.createItem(Material.DIODE, d.gameTime==10?2:1, 0, Config.getMessage("gui.game-duration.10-mins"))).setAction(new GUIElementAction() {
+		builder.addElement(12, new StaticGUIElement(ItemUtils.createItem(VersionedMaterial.REPEATER, d.gameTime==10?2:1, Config.getMessage(Message.GUI_GAME_DURATION_10_MINUTES))).setAction(new GUIElementAction() {
 			
 			@Override
 			public void onAction(GUIElementActionEvent event) {
@@ -84,7 +88,7 @@ public class GUIs {
 				p.openInventory(GUIs.getGameTimeInv(p, g).getForPlayer(p));
 			}
 		}));
-		builder.addElement(14, new StaticGUIElement(Tools.createItem(Material.DIODE, d.gameTime==20?2:1, 0, Config.getMessage("gui.game-duration.20-mins"))).setAction(new GUIElementAction() {
+		builder.addElement(14, new StaticGUIElement(ItemUtils.createItem(VersionedMaterial.REPEATER, d.gameTime==20?2:1, Config.getMessage(Message.GUI_GAME_DURATION_20_MINUTES))).setAction(new GUIElementAction() {
 			
 			@Override
 			public void onAction(GUIElementActionEvent event) {
@@ -94,7 +98,7 @@ public class GUIs {
 				p.openInventory(GUIs.getGameTimeInv(p, g).getForPlayer(p));
 			}
 		}));
-		builder.addElement(16, new StaticGUIElement(Tools.createItem(Material.DIODE, d.gameTime==-1?2:1, 0, Config.getMessage("gui.game-duration.infinite"))).setAction(new GUIElementAction() {
+		builder.addElement(16, new StaticGUIElement(ItemUtils.createItem(VersionedMaterial.REPEATER, d.gameTime==-1?2:1, Config.getMessage(Message.GUI_GAME_DURATION_INFINITE))).setAction(new GUIElementAction() {
 			
 			@Override
 			public void onAction(GUIElementActionEvent event) {
@@ -105,7 +109,7 @@ public class GUIs {
 			}
 		}));
 		
-		builder.addElement(18, new StaticGUIElement(Tools.createItem(Tools.arrowLeft(DyeColor.RED), "�cBack")).setAction(new GUIElementAction() {
+		builder.addElement(18, new StaticGUIElement(ItemUtils.createItem(ItemUtils.arrowLeft(VersionedDyeColor.RED), "§cBack")).setAction(new GUIElementAction() {
 			
 			@Override
 			public void onAction(GUIElementActionEvent event) {
@@ -120,7 +124,7 @@ public class GUIs {
 		GUIBuilder builder = new GUIBuilder(Config.choiceInvName, 3);
 		
 		VotingData d = g.getVotingData(p);
-		ItemStack gP = Tools.createItem(Material.STAINED_GLASS_PANE, 1, 0, "�0");
+		ItemStack gP = ItemUtils.createItem(VersionedMaterial.WHITE_STAINED_GLASS_PANE, 1, "§0");
 		
 		for(int i = 0; i < 3*9; i++) {
 			builder.addElement(i, new StaticGUIElement(gP));
@@ -128,7 +132,7 @@ public class GUIs {
 		ArenaLayout l1 = g.getLayouts().get(0);
 		ArenaLayout l2 = g.getLayouts().get(1);
 		
-		builder.addElement(10, new StaticGUIElement(Tools.createItem(l1.getIconType(), d.mazeLayout==1?2:1, l1.getIconData(), l1.getDisplayName())).setAction(new GUIElementAction() {
+		builder.addElement(10, new StaticGUIElement(ItemUtils.createItem(l1.getIcon().getMaterial(), d.mazeLayout==1?2:1, l1.getIcon().getData(), l1.getDisplayName())).setAction(new GUIElementAction() {
 			
 			@Override
 			public void onAction(GUIElementActionEvent event) {
@@ -139,7 +143,7 @@ public class GUIs {
 			}
 		}));
 		
-		builder.addElement(12, new StaticGUIElement(Tools.createItem(l2.getIconType(), d.mazeLayout==2?2:1, l2.getIconData(), l2.getDisplayName())).setAction(new GUIElementAction() {
+		builder.addElement(12, new StaticGUIElement(ItemUtils.createItem(l2.getIcon().getMaterial(), d.mazeLayout==2?2:1, l2.getIcon().getData(), l2.getDisplayName())).setAction(new GUIElementAction() {
 			
 			@Override
 			public void onAction(GUIElementActionEvent event) {
@@ -152,7 +156,7 @@ public class GUIs {
 		
 		if(g.getLayouts().size()==3) {
 			ArenaLayout l3 = g.getLayouts().get(2);
-			builder.addElement(14, new StaticGUIElement(Tools.createItem(l3.getIconType(), d.mazeLayout==3?2:1, l3.getIconData(), l3.getDisplayName())).setAction(new GUIElementAction() {
+			builder.addElement(14, new StaticGUIElement(ItemUtils.createItem(l3.getIcon().getMaterial(), d.mazeLayout==3?2:1, l3.getIcon().getData(), l3.getDisplayName())).setAction(new GUIElementAction() {
 				
 				@Override
 				public void onAction(GUIElementActionEvent event) {
@@ -163,10 +167,10 @@ public class GUIs {
 				}
 			}));
 		}else {
-			builder.addElement(14, new StaticGUIElement(Tools.createItem(Material.BARRIER, 1, 0, Config.getMessage("gui.maze-layout.not-available"))));
+			builder.addElement(14, new StaticGUIElement(ItemUtils.createItem(Material.BARRIER, 1, 0, Config.getMessage(Message.GUI_MAZE_LAYOUT_NOT_AVAILABLE))));
 		}
 		
-		builder.addElement(16, new StaticGUIElement(Tools.createItem(Material.STAINED_CLAY, d.mazeLayout==-1?2:1, 0, Config.getMessage("gui.maze-layout.random"))).setAction(new GUIElementAction() {
+		builder.addElement(16, new StaticGUIElement(ItemUtils.createItem(VersionedMaterial.WHITE_STAINED_CLAY, d.mazeLayout==-1?2:1, Config.getMessage(Message.GUI_MAZE_LAYOUT_RANDOM))).setAction(new GUIElementAction() {
 			
 			@Override
 			public void onAction(GUIElementActionEvent event) {
@@ -177,7 +181,7 @@ public class GUIs {
 			}
 		}));
 		
-		builder.addElement(18, new StaticGUIElement(Tools.createItem(Tools.arrowLeft(DyeColor.RED), "�cBack")).setAction(new GUIElementAction() {
+		builder.addElement(18, new StaticGUIElement(ItemUtils.createItem(ItemUtils.arrowLeft(VersionedDyeColor.RED), "§cBack")).setAction(new GUIElementAction() {
 			
 			@Override
 			public void onAction(GUIElementActionEvent event) {

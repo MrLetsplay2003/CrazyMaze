@@ -13,6 +13,9 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.scheduler.BukkitTask;
 
+import me.mrletsplay.mrcore.bukkitimpl.BlockUtils;
+import me.mrletsplay.mrcore.bukkitimpl.versioned.VersionedMaterial;
+
 public class Maze3D{
 	
 	public int size;
@@ -179,7 +182,6 @@ public class Maze3D{
 		}
 	}
 	
-	@SuppressWarnings("deprecation")
 	public void save(Runnable fin, Runnable pfin){
 		fill(this.x-wS,this.y+(currZ*(wallHeight+1)),this.z-wS,size*sc+wS,wallHeight,size*sc+wS,Material.AIR,Config.cmWorld,10);
 		
@@ -196,8 +198,8 @@ public class Maze3D{
 				byte b = fieldD;
 				if(powerups && r.nextDouble()<=Config.fieldChance) {
 					PowerupField field = PowerupField.values()[r.nextInt(PowerupField.values().length)];
-					m = field.material;
-					b = field.data;
+					m = field.materialWithData.getMaterial();
+					b = (byte) field.materialWithData.getData();
 				}
 				fill(this.x+x*sc, this.z+y*sc, scale, scale, this.y-1+(currZ*(wallHeight+1)), m, Config.cmWorld, b, 0.02);
 			}
@@ -240,16 +242,18 @@ public class Maze3D{
 		}
 		if(currZ == layers-1) {
 			final int cZ = currZ;
-			tasks.add(Bukkit.getScheduler().runTaskLater(Main.pl, () -> {
+			tasks.add(Bukkit.getScheduler().runTaskLater(CrazyMaze.pl, () -> {
 				Block s;
-				if(cZ%2==0) {
+				if(cZ % 2 == 0) {
 					s = new Location(Config.cmWorld, this.x+((size-1)*sc)+scale-1, this.y+(cZ*(wallHeight+1)), this.z+(size-1)*sc).getBlock();
-					s.setType(Material.SIGN_POST);
-					s.setData((byte) 4);
+//					s.setType(VersionedMaterial.OAK_SIGN_BLOCK.getCurrentMaterialDefinition().getMaterial());
+//					s.setData((byte) 4);
+					BlockUtils.placeBlock(s.getLocation(), VersionedMaterial.OAK_SIGN_BLOCK.getCurrentMaterialDefinition().getMaterial(), (byte) 4);
 				}else {
 					s = new Location(Config.cmWorld, this.x, this.y+(cZ*(wallHeight+1)), this.z).getBlock();
-					s.setType(Material.SIGN_POST);
-					s.setData((byte) 12);
+//					s.setType(VersionedMaterial.OAK_SIGN_BLOCK.getCurrentMaterialDefinition().getMaterial());
+//					s.setData((byte) 12);
+					BlockUtils.placeBlock(s.getLocation(), VersionedMaterial.OAK_SIGN_BLOCK.getCurrentMaterialDefinition().getMaterial(), (byte) 12);
 				}
 				Sign ss = (Sign) s.getState();
 				ss.setLine(0, Config.signLayout0);
@@ -271,7 +275,7 @@ public class Maze3D{
 	
 	public void fill(int x1, int z1, int width, int height, int y, Material m, World w, double delay){
 		i+=delay/Config.genSpeed;
-		tasks.add(Bukkit.getScheduler().runTaskLater(Main.pl, () -> {
+		tasks.add(Bukkit.getScheduler().runTaskLater(CrazyMaze.pl, () -> {
 			for(int x = x1; x < x1+width; x++){
 				for(int z = z1; z < z1+height; z++){
 					final int x2 = x;
@@ -286,10 +290,9 @@ public class Maze3D{
 		}, (long) i));
 	}
 	
-	@SuppressWarnings("deprecation")
 	public void fill(int x1, int z1, int width, int height, int y, Material m, World w, byte dat, double delay){
 		i+=delay/Config.genSpeed;
-		tasks.add(Bukkit.getScheduler().runTaskLater(Main.pl, () -> {
+		tasks.add(Bukkit.getScheduler().runTaskLater(CrazyMaze.pl, () -> {
 			for(int x = x1; x < x1+width; x++){
 				for(int z = z1; z < z1+height; z++){
 					final int x2 = x;
@@ -297,8 +300,7 @@ public class Maze3D{
 					final int z2 = z;
 					Block b = w.getBlockAt(x2, y2, z2);
 					if(!b.getType().equals(m)){
-						b.setType(m);
-						b.setData(dat);
+						BlockUtils.placeBlock(b.getLocation(), m, dat);
 					}
 				}
 			}
@@ -311,7 +313,7 @@ public class Maze3D{
 	
 	public void fill(int x1, int y1, int z1, int width, int height, int length, Material m, World w, double delay, Runnable fin){
 		i += delay/Config.genSpeed;
-		tasks.add(Bukkit.getScheduler().runTaskLater(Main.pl, () -> {
+		tasks.add(Bukkit.getScheduler().runTaskLater(CrazyMaze.pl, () -> {
 			fill_r(x1, y1, z1, width, height, length, m, w, fin);
 		}, (long) i));
 	}
@@ -333,10 +335,9 @@ public class Maze3D{
 		if(fin!=null) fin.run();
 	}
 	
-	@SuppressWarnings("deprecation")
 	public void fill(int x1, int y1, int z1, int width, int height, int length, Material m, World w, byte data, double delay){
 		i+=delay/Config.genSpeed;
-		tasks.add(Bukkit.getScheduler().runTaskLater(Main.pl, () -> {
+		tasks.add(Bukkit.getScheduler().runTaskLater(CrazyMaze.pl, () -> {
 			for(int x = x1; x < x1+width; x++){
 				for(int z = z1; z < z1+length; z++){
 					for(int y = y1+height-1; y > y1-1; y--){ 
@@ -344,8 +345,7 @@ public class Maze3D{
 						final int y2 = y;
 						final int z2 = z;
 						Block b = w.getBlockAt(x2, y2, z2);
-						b.setType(m);
-						b.setData(data);
+						BlockUtils.placeBlock(b.getLocation(), m, data);
 					}
 				}
 			}

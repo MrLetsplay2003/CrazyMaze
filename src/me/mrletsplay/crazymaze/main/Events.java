@@ -10,6 +10,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
@@ -17,81 +18,88 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.util.Vector;
 
+import me.mrletsplay.crazymaze.arena.Arena;
+import me.mrletsplay.crazymaze.game.Game;
+import me.mrletsplay.crazymaze.game.GameStage;
+import me.mrletsplay.crazymaze.game.Games;
 import me.mrletsplay.crazymaze.main.Tools.AbsoluteDirection;
+import me.mrletsplay.mrcore.bukkitimpl.versioned.VersionedMaterial;
 
 public class Events implements Listener{
 
 	@EventHandler
-	public void onIn(PlayerInteractEvent e) {
-		if(e.getAction().equals(Action.RIGHT_CLICK_BLOCK) && (e.getClickedBlock().getType().equals(Material.SIGN_POST) || e.getClickedBlock().getType().equals(Material.WALL_SIGN))) {
+	public void onPlayerInteract(PlayerInteractEvent e) {
+		if(e.getAction().equals(Action.RIGHT_CLICK_BLOCK) && e.getClickedBlock().getState() instanceof Sign) {
 			Sign s = (Sign) e.getClickedBlock().getState();
 			if(s.getLine(0).equals(Config.signLayout0)) {
 				if(s.getLine(1).equals(Config.signLayout1_2)) { 
 					if(Games.isInGame(e.getPlayer())) {
 						Game g = Games.getGame(e.getPlayer());
-						if(g.getStage() > 0) {
+						if(!g.getStage().equals(GameStage.WAITING)) {
 							Player winner = e.getPlayer();
 							for(Player p : g.getPlayers()) {
-								p.sendMessage(Config.getMessage("ingame.end.win", "winner", winner.getDisplayName()));
+								p.sendMessage(Config.getMessage(Message.INGAME_END_WIN, "winner", winner.getDisplayName()));
 							}
 							g.stop(false);
-							if(g.getArena().getOnWin()!=null) Bukkit.dispatchCommand(Bukkit.getConsoleSender(), g.getArena().getOnWin()
+							if(g.getArena().getOnWin() != null) Bukkit.dispatchCommand(Bukkit.getConsoleSender(), g.getArena().getOnWin()
 									.replace("%winner%", winner.getName())
 									.replace("%winneruuid%", winner.getUniqueId().toString()));
 						}
 					}else {
-						e.getPlayer().sendMessage(Config.getMessage("other.not-ingame"));
+						e.getPlayer().sendMessage(Config.getMessage(Message.OTHER_NOT_INGAME));
 					}
 				}else {
 					if(Games.isInGame(e.getPlayer())) {
-						e.getPlayer().sendMessage(Config.getMessage("other.already-ingame"));
+						e.getPlayer().sendMessage(Config.getMessage(Message.OTHER_NOT_INGAME));
 						return;
 					}
 					Game g = Games.getSign(s.getLocation());
 					if(g!=null) {
-						if(g.getStage() == 1 || g.getStage() == 2) {
-							e.getPlayer().sendMessage(Config.getMessage("other.game-running"));
+						if(g.getStage().equals(GameStage.GENERATING) || g.getStage().equals(GameStage.RUNNING)) {
+							e.getPlayer().sendMessage(Config.getMessage(Message.OTHER_GAME_RUNNING));
 							return;
 						}
-						if(g.getStage() == 3) {
-							e.getPlayer().sendMessage(Config.getMessage("other.game-restarting"));
+						
+						if(g.getStage().equals(GameStage.RESETTING)) {
+							e.getPlayer().sendMessage(Config.getMessage(Message.OTHER_GAME_RESTARTING));
 							return;
 						}
+						
 						if(g.getPlayers().size()>=g.getArena().getMaxPlayers()) {
-							e.getPlayer().sendMessage(Config.getMessage("other.game-full"));
+							e.getPlayer().sendMessage(Config.getMessage(Message.OTHER_GAME_FULL));
 							return;
 						}
 						g.addPlayer(e.getPlayer());
 					}
 				}
 			}
-		}
-	}
-	
-	@EventHandler
-	public void onInteract(PlayerInteractEvent e) {
-		if(e.getItem()!=null && e.getItem().hasItemMeta() && e.getItem().getItemMeta().hasDisplayName()) {
+		}else if(e.getItem()!=null && e.getItem().hasItemMeta() && e.getItem().getItemMeta().hasDisplayName()) {
 			String dName = e.getItem().getItemMeta().getDisplayName();
 			if(Games.isInGame(e.getPlayer())) {
 				Game g = Games.getGame(e.getPlayer());
 				Player p = e.getPlayer();
-				if(g.getStage()==2) {
+				if(g.getStage().equals(GameStage.RUNNING)) {
 					if(Config.matchesItem(e.getItem(), Powerup.PASS_WALL.item)) {
-						if(e.getAction().equals(Action.RIGHT_CLICK_BLOCK) && e.getClickedBlock().getType().equals(g.getLayout().getWalls())) {
+						if(e.getAction().equals(Action.RIGHT_CLICK_BLOCK) && e.getClickedBlock().getType().equals(g.getLayout().getWalls().getMaterial())) {
 							if(p.getLocation().distance(e.getClickedBlock().getLocation())<2) {
 								Vector f = Tools.getField(p.getLocation(), g);
 								Vector f2 = Tools.add(f, Tools.get(e.getPlayer().getLocation().getDirection()), 1);
-								if(f2.getBlockX()>=0 && f2.getBlockZ()>=0 && f2.getBlockX() < g.getArena().getSize() && f2.getBlockZ() < g.getArena().getSize()) {
+								if(f2.getBlockX() >= 0 && f2.getBlockZ() >= 0 && f2.getBlockX() < g.getArena().getSize() && f2.getBlockZ() < g.getArena().getSize()) {
 									p.teleport(new Location(Config.cmWorld, f2.getBlockX()*g.getPanel().sc+1, Config.MAZE_Y+1, f2.getBlockZ()*g.getPanel().sc+1).setDirection(p.getLocation().getDirection()));
-									if(p.getItemInHand().getAmount()>1) {
-										p.getItemInHand().setAmount(p.getItemInHand().getAmount()-1);
+									if(e.getItem().getAmount()>1) {
+										e.getItem().setAmount(e.getItem().getAmount()-1);
 									}else {
-										p.setItemInHand(null);
+										if(e.getHand().equals(EquipmentSlot.HAND)) {
+											p.getInventory().setItemInMainHand(null);
+										}else {
+											p.getInventory().setItemInOffHand(null);
+										}
 									}
 								}else {
-									p.sendMessage(Config.getMessage("ingame.cannot-pass"));
+									p.sendMessage(Config.getMessage(Message.INGAME_CANNOT_PASS));
 								}
 							}
 						}
@@ -102,16 +110,17 @@ public class Events implements Listener{
 							Vector f2 = Tools.add(f, dir, 1);
 							Location fLoc = new Location(Config.cmWorld, f2.getBlockX()*g.getPanel().sc, Config.MAZE_Y+1, f2.getBlockZ()*g.getPanel().sc);
 							if(f2.getBlockX()>=0 && f2.getBlockZ()>=0 && f2.getBlockX() < g.getArena().getSize() && f2.getBlockZ() < g.getArena().getSize()) {
-								g.getPanel().fill(fLoc.getBlockX(), fLoc.getBlockY(), fLoc.getBlockZ(), g.getPanel().scale, Maze3D.wallHeight, g.getPanel().scale, Material.WOOL, Config.cmWorld, 0, () ->{
-									g.buildTaskIDs.add(Bukkit.getScheduler().runTaskLater(Main.pl, () -> {
+								g.getPanel().fill(fLoc.getBlockX(), fLoc.getBlockY(), fLoc.getBlockZ(), g.getPanel().scale, Maze3D.wallHeight, g.getPanel().scale, VersionedMaterial.WHITE_WOOL.getCurrentMaterialDefinition().getMaterial(), Config.cmWorld, 0, () ->{
+									g.buildTaskIDs.add(Bukkit.getScheduler().runTaskLater(CrazyMaze.pl, () -> {
 										g.getPanel().fill(fLoc.getBlockX(), fLoc.getBlockY(), fLoc.getBlockZ(), g.getPanel().scale, Maze3D.wallHeight, g.getPanel().scale, Material.AIR, Config.cmWorld, 0, null);
 									}, Config.wallTime*20L).getTaskId());
-									if(p.getItemInHand().getAmount()>0) {
-										p.getItemInHand().setAmount(p.getItemInHand().getAmount()-1);
+									
+									if(e.getItem().getAmount()>0) {
+										e.getItem().setAmount(e.getItem().getAmount()-1);
 									}
 								});
 							}else {
-								p.sendMessage(Config.getMessage("ingame.cannot-create-barrier"));
+								p.sendMessage(Config.getMessage(Message.INGAME_CANNOT_CREATE_BARRIER));
 							}
 						}
 					}else if(Config.matchesItem(e.getItem(), Powerup.PROTECT.item)) {
@@ -123,13 +132,15 @@ public class Events implements Listener{
 							
 						}
 					}
-				}else if(g.getStage()==0) {
+				}else if(g.getStage().equals(GameStage.WAITING)) {
 					if(e.getAction().equals(Action.RIGHT_CLICK_BLOCK) || e.getAction().equals(Action.RIGHT_CLICK_AIR)){
 						if(dName.equals(Config.gameOptions.getItemMeta().getDisplayName())) {
 							p.openInventory(GUIs.getVotingGUI(g.getArena()).getForPlayer(p));
 						}else if(dName.equals(Config.quitGame.getItemMeta().getDisplayName())) {
-							g.removePlayer(p);
-							p.sendMessage(Config.getMessage("other.game-left"));
+							Bukkit.getScheduler().runTaskLater(CrazyMaze.pl, () -> {
+								g.removePlayer(p);
+								p.sendMessage(Config.getMessage(Message.OTHER_GAME_LEFT));
+							}, 1L);
 						}
 					}
 				}
@@ -138,35 +149,32 @@ public class Events implements Listener{
 	}
 	
 	@EventHandler
-	public void onQuit(PlayerQuitEvent e) {
+	public void onPlayerQuit(PlayerQuitEvent e) {
 		if(Games.isInGame(e.getPlayer())) {
 			Game g = Games.getGame(e.getPlayer());
 			g.removePlayer(e.getPlayer());
 		}
-		if(Main.arenas.containsKey(e.getPlayer())) {
-			Main.arenas.remove(e.getPlayer());
+		if(CrazyMaze.arenas.containsKey(e.getPlayer())) {
+			CrazyMaze.arenas.remove(e.getPlayer());
 		}
 	}
 	
 	@EventHandler
-	public void onBlBr(BlockBreakEvent e) {
-		if(Games.getSign(e.getBlock().getLocation())!=null) {
-			e.setCancelled(true);
-		}
+	public void onBlockBreak(BlockBreakEvent e) {
 		if(Games.isInGame(e.getPlayer())) {
 			e.setCancelled(true);
 		}
 	}
 	
 	@EventHandler
-	public void onBlPl(BlockPlaceEvent e) {
+	public void onBlockPlace(BlockPlaceEvent e) {
 		if(Games.isInGame(e.getPlayer())) {
 			e.setCancelled(true);
 		}
 	}
 	
 	@EventHandler
-	public void onDamage(EntityDamageEvent e) {
+	public void onEntityDamage(EntityDamageEvent e) {
 		if(!(e.getEntity() instanceof Player)) return;
 		if(Games.isInGame((Player) e.getEntity())) {
 			e.setCancelled(true);
@@ -175,7 +183,7 @@ public class Events implements Listener{
 	
 	
 	@EventHandler
-	public void onEnDByEn(EntityDamageByEntityEvent e) {
+	public void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
 		if(!(e.getEntity() instanceof Player)) return;
 		if(Games.isInGame((Player) e.getEntity())) {
 			e.setCancelled(true);
@@ -183,18 +191,18 @@ public class Events implements Listener{
 	}
 	
 	@EventHandler
-	public void onFood(FoodLevelChangeEvent e) {
+	public void onFoodLevelChange(FoodLevelChangeEvent e) {
 		if(Games.isInGame((Player) e.getEntity())) {
 			e.setCancelled(true);
 		}
 	}
 	
 	@EventHandler
-	public void onDrop(PlayerDropItemEvent e) {
+	public void onPlayerDropItem(PlayerDropItemEvent e) {
 		if(Games.isInGame(e.getPlayer())) {
 			Player p = e.getPlayer();
 			Game g = Games.getGame(p);
-			if(g.getStage() == 0) e.setCancelled(true);
+			if(g.getStage().equals(GameStage.WAITING)) e.setCancelled(true);
 		}
 	}
 	
@@ -207,6 +215,21 @@ public class Events implements Listener{
 					UpdateChecker.sendUpdateMessage(res, e.getPlayer());
 				}
 			}
+		}
+	}
+	
+	@EventHandler
+	public void onSign(SignChangeEvent e) {
+		if(e.getLine(0) != null && e.getLine(0).equalsIgnoreCase("[crazymaze]")) {
+			String arenaName = e.getLine(1);
+			Arena a = Games.getArena(arenaName);
+			if(a == null) {
+				e.getPlayer().sendMessage("Invalid arena");
+				return;
+			}
+			a.addSignLocation(e.getBlock().getLocation());
+			a.updSign();
+			Config.saveArena(a);
 		}
 	}
 	

@@ -2,23 +2,20 @@ package me.mrletsplay.crazymaze.arena;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
 
+import me.mrletsplay.crazymaze.game.Game;
+import me.mrletsplay.crazymaze.game.Games;
 import me.mrletsplay.crazymaze.main.Config;
-import me.mrletsplay.crazymaze.main.Game;
-import me.mrletsplay.crazymaze.main.Games;
-import me.mrletsplay.crazymaze.main.Tools;
 
 public class Arena {
 
 	private String name;
-	private Location gameLobby, mainLobby, signLocation;
+	private Location gameLobby, mainLobby;
+	private List<Location> signLocations;
 	private int maxPlayers, size, minPlayers;
 	private boolean enablePowerups;
 	private String onWin;
@@ -26,20 +23,25 @@ public class Arena {
 	
 	public Arena(String name) {
 		this.name = name;
-		this.mainLobby = Tools.getLocation(Config.config, "settings.defaultmainlobby");
+		this.mainLobby = Config.config.getLocation("settings.defaultmainlobby");
+		this.signLocations = new ArrayList<>();
 	}
 	
-	public Arena(String name, Location gameLobby, Location mainLobby, Location signLocation, int maxPlayers, int size, String onWin, int minPlayers, boolean powerups, List<ArenaLayout> layouts) {
+	public Arena(String name, Location gameLobby, Location mainLobby, List<Location> signLocations, int maxPlayers, int size, String onWin, int minPlayers, boolean powerups, List<ArenaLayout> layouts) {
 		this.name = name;
 		this.gameLobby = gameLobby;
 		this.mainLobby = mainLobby;
-		this.signLocation = signLocation;
+		this.signLocations = signLocations;
 		this.maxPlayers = maxPlayers;
 		this.minPlayers = minPlayers;
 		this.size = size;
 		this.onWin = onWin;
 		this.enablePowerups = powerups;
 		this.layouts = layouts;
+	}
+	
+	public Arena(String name, Location gameLobby, Location mainLobby, int maxPlayers, int size, String onWin, int minPlayers, boolean powerups, List<ArenaLayout> layouts) {
+		this(name, gameLobby, mainLobby, new ArrayList<>(), maxPlayers, size, onWin, minPlayers, powerups, layouts);
 	}
 	
 	public void setName(String name) {
@@ -54,8 +56,12 @@ public class Arena {
 		this.mainLobby = mainLobby;
 	}
 	
-	public void setSignLocation(Location signLocation) {
-		this.signLocation = signLocation;
+	public void addSignLocation(Location signLocation) {
+		signLocations.add(signLocation);
+	}
+	
+	public void removeSignLocation(Location signLocation) {
+		signLocations.remove(signLocation);
 	}
 	
 	public void setMaxPlayers(int maxPlayers) {
@@ -90,7 +96,6 @@ public class Arena {
 				ls.add(l);
 			}
 		}
-		System.out.println(ls.stream().map(l -> l.getName()).collect(Collectors.joining(",")));
 		this.layouts = ls;
 		return notFound;
 	}
@@ -107,8 +112,8 @@ public class Arena {
 		return mainLobby;
 	}
 	
-	public Location getSignLocation() {
-		return signLocation;
+	public List<Location> getSignLocations() {
+		return signLocations;
 	}
 	
 	public int getMaxPlayers() {
@@ -136,29 +141,53 @@ public class Arena {
 	}
 	
 	public void updSign() {
-		Game g;
-		if((g=Games.getGame(this))!=null) {
-			g.updSign();
-			return;
-		}
-		Block b = getSignLocation().getBlock();
-		if(!b.getType().equals(Material.SIGN_POST) && !b.getType().equals(Material.WALL_SIGN)) {
-			if(b.getRelative(BlockFace.DOWN).getType().equals(Material.AIR)) {
-				b.getRelative(BlockFace.DOWN).setType(Material.STONE);
+//		Game g;
+//		if((g = Games.getGame(this)) != null) {
+//			g.updSign();
+//			return;
+//		}
+		
+		for(Location loc : signLocations) {
+			Block b = loc.getBlock();
+			if(!(b.getState() instanceof Sign)) continue;
+			Sign s = (Sign)b.getState();
+			
+			Game g = Games.getGame(this);
+			
+			s.setLine(0, Config.signLayout0);
+			s.setLine(1, Config.signLayout1.replace("%name%", getName()).replace("%size%", ""+getSize()));
+			String sl2 = powerupsEnabled() ? Config.signLayout2p : Config.signLayout2np;
+			s.setLine(2, sl2.replace("%pl%", g == null ? "0" : ""+g.getPlayers().size()).replace("%mpl%", ""+getMaxPlayers()).replace("%npl%", ""+getMinPlayers()));
+			
+			if(g == null) {
+				s.setLine(3, Config.signLayout3w);
+				s.update();
+			}else {
+				String sl3 = "§c???";
+				switch(g.getStage()) {
+					case WAITING:
+						sl3 = Config.signLayout3w;
+						break;
+					case GENERATING:
+						sl3 = Config.signLayout3i;
+						break;
+					case RUNNING:
+						sl3 = Config.signLayout3i;
+						break;
+					case RESETTING:
+						sl3 = Config.signLayout3r;
+						break;
+				}
+				s.setLine(3, sl3);
+				s.update();
 			}
-			b.setType(Material.SIGN_POST);
 		}
-		Sign s = (Sign)b.getState();
-		s.setLine(0, Config.signLayout0);
-		s.setLine(1, Config.signLayout1.replace("%name%", getName()).replace("%size%", ""+getSize()));
-		String sl2 = powerupsEnabled()?Config.signLayout2p:Config.signLayout2np;
-		s.setLine(2, sl2.replace("%pl%", "0").replace("%mpl%", ""+getMaxPlayers()).replace("%npl%", ""+getMinPlayers()));
-		s.setLine(3, Config.signLayout3w);
-		s.update();
 	}
 	
 	public Arena clone() {
-		return new Arena(name, gameLobby, mainLobby, signLocation, maxPlayers, size, onWin, minPlayers, enablePowerups, layouts);
+		Arena newArena = new Arena(name, gameLobby, mainLobby, maxPlayers, size, onWin, minPlayers, enablePowerups, layouts);
+		newArena.signLocations.addAll(signLocations);
+		return newArena;
 	}
 	
 }

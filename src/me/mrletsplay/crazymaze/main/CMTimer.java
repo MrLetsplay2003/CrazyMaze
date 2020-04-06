@@ -6,15 +6,17 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import me.mrletsplay.crazymaze.game.Games;
+
 public class CMTimer {
 
 	@SuppressWarnings("deprecation")
 	public static void init() {
-		Bukkit.getScheduler().scheduleSyncRepeatingTask(Main.pl, () -> {
+		Bukkit.getScheduler().scheduleSyncRepeatingTask(CrazyMaze.pl, () -> {
 			Games.games.forEach((a, g) -> {
 				g.getPlayers().forEach(p -> {
 					Block b = p.getLocation().getBlock().getRelative(BlockFace.DOWN);
-					if(b.getType().equals(PowerupField.SPEED.material) && b.getData() == PowerupField.SPEED.data) {
+					if(b.getType().equals(PowerupField.SPEED.materialWithData.getMaterial()) && b.getData() == PowerupField.SPEED.materialWithData.getData()) {
 						if(p.hasPotionEffect(PotionEffectType.SPEED)) p.removePotionEffect(PotionEffectType.SPEED);
 						p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 20*5, 1, false, false));
 					}

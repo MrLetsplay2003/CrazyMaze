@@ -12,95 +12,45 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
-import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.block.banner.Pattern;
-import org.bukkit.block.banner.PatternType;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemFlag;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BannerMeta;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import me.mrletsplay.crazymaze.arena.ArenaLayout;
+import me.mrletsplay.crazymaze.game.Game;
+import me.mrletsplay.crazymaze.game.GameStage;
+import me.mrletsplay.crazymaze.game.Games;
 import me.mrletsplay.mrcore.config.CustomConfig;
 
 public class Tools {
 	
 	private static int layers = 1;
 	
-	public static ItemStack createItem(Material m, int am, int dam, String name, String... lore) {
-		ItemStack i = new ItemStack(m, am, (short) dam);
-		ItemMeta me = i.getItemMeta();
-		if(name!=null) me.setDisplayName(name);
-		me.setLore(Arrays.stream(lore).filter(l -> !l.equals("")).collect(Collectors.toList()));
-		i.setItemMeta(me);
-		return i;
+	public static void setMaterial(CustomConfig cfg, String path, MaterialWithData materialWithData) {
+		String s = materialWithData.getMaterial().name().toLowerCase();
+		if(materialWithData.getData() > 0) s += ":" + materialWithData.getData();
+		cfg.set(path, s);
 	}
 	
-	public static ItemStack arrowLeft(DyeColor col) {
-		ItemStack i = new ItemStack(Material.BANNER);
-		BannerMeta m = (BannerMeta) i.getItemMeta();
-		m.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
-		m.setBaseColor(col);
-		m.addPattern(new Pattern(DyeColor.BLACK, PatternType.RHOMBUS_MIDDLE));
-		m.addPattern(new Pattern(col, PatternType.STRIPE_RIGHT));
-		m.addPattern(new Pattern(col, PatternType.SQUARE_TOP_RIGHT));
-		m.addPattern(new Pattern(col, PatternType.SQUARE_BOTTOM_RIGHT));
-		i.setItemMeta(m);
-		return i;
+	public static MaterialWithData loadMaterial(CustomConfig cfg, String path) {
+		String md = cfg.getString(path);
+		String[] spl = md.split(":");
+		if(spl.length > 2) throw new IllegalArgumentException("Invalid material with data");
+		Material m = Material.valueOf(spl[0].toUpperCase());
+		byte d = 0;
+		if(spl.length == 2) d = Byte.parseByte(spl[1]);
+		return new MaterialWithData(m, d);
 	}
 	
-	public static ItemStack createItem(ItemStack it, String name, String... lore){
-		ItemStack i = new ItemStack(it);
-		ItemMeta me = i.getItemMeta();
-		me.setDisplayName(name);
-		List<String> s = new ArrayList<>();
-		for(String l:lore){
-			s.add(l);
-		}
-		me.setLore(s);
-		i.setItemMeta(me);
-		return i;
-	}
-
-	public static void saveLocation(CustomConfig cfg, String key, Location l) {
-		cfg.set(key + ".world", l.getWorld().getName());
-		cfg.set(key + ".x", l.getX());
-		cfg.set(key + ".y", l.getY());
-		cfg.set(key + ".z", l.getZ());
-		cfg.set(key + ".pitch", (double)l.getPitch());
-		cfg.set(key + ".yaw", (double)l.getYaw());
-	}
-
-	public static Location getLocation(CustomConfig cfg, String key) {
-		String w = null;
-		if ((w = Config.arenaConfig.getString(key + ".world")) == null) {
-			return null;
-		}
-		World world = Bukkit.getWorld(w);
-		if (world == null) {
-			return null;
-		}
-		double x = cfg.getDouble(key + ".x");
-		double y = cfg.getDouble(key + ".y");
-		double z = cfg.getDouble(key + ".z");
-		double pitch = cfg.getDouble(key + ".pitch");
-		double yaw = cfg.getDouble(key + ".yaw");
-		return new Location(world, x, y, z, (float) yaw, (float) pitch);
-	}
-
 	public static Maze3D setupArena(Game g, ArenaLayout layout, Runnable onFinished, Runnable pFinished) {
 		Location loc = getNextSpiralLocation();
 		g.arenaLoc = loc;
-		Maze3D p = new Maze3D(layout.getFloor(), layout.getFloorD(), layout.getWalls(), layout.getWallsD(), layout.getBetween(), layout.getBetweenD());
+		Maze3D p = new Maze3D(layout.getFloor().getMaterial(), (byte) layout.getFloor().getData(), layout.getWalls().getMaterial(), (byte) layout.getWalls().getData(), layout.getBetween().getMaterial(), (byte) layout.getBetween().getData());
 		g.panel = p;
 		new Thread(() -> {
 			p.init(loc.getBlockX(), loc.getBlockY()+1, loc.getBlockZ(), g.getArena().getSize(), Config.wallWidth, Config.pathWidth, layers, g.getArena().powerupsEnabled(), onFinished, pFinished, new ArrayList<>());
@@ -139,9 +89,11 @@ public class Tools {
 							(x == loc.getBlockX()+g.getArena().getSize()*sc+Config.wallWidth-2?onFinished:null));
 				}
 			}
-			for(Entity e : Config.cmWorld.getNearbyEntities(new Location(Config.cmWorld, loc.getBlockX()+g.getArena().getSize()*sc/2, loc.getBlockY(), loc.getBlockZ()+g.getArena().getSize()*sc/2), g.getArena().getSize()*sc/2+1, Maze3D.wallHeight, g.getArena().getSize()*sc/2+1)) {
-				e.remove();
-			}
+			Bukkit.getScheduler().runTask(CrazyMaze.pl, () -> {
+				for(Entity e : Config.cmWorld.getNearbyEntities(new Location(Config.cmWorld, loc.getBlockX()+g.getArena().getSize()*sc/2, loc.getBlockY(), loc.getBlockZ()+g.getArena().getSize()*sc/2), g.getArena().getSize()*sc/2+1, Maze3D.wallHeight, g.getArena().getSize()*sc/2+1)) {
+					e.remove();
+				}
+			});
 		}
 	}
 	
@@ -180,7 +132,7 @@ public class Tools {
 	}
 	
 	private static boolean containsLoc(Location l) {
-		return Games.games.values().stream().anyMatch(g -> g.getStage()>0&&g.arenaLoc!=null&&g.arenaLoc.equals(l));
+		return Games.games.values().stream().anyMatch(g -> !g.getStage().equals(GameStage.WAITING) && g.arenaLoc != null && g.arenaLoc.equals(l));
 	}
 	
 	public static void removePotionEffects(Player p) {

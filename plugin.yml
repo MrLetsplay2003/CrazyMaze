@@ -1,7 +1,8 @@
 main: me.mrletsplay.crazymaze.main.Main
 author: MrLetsplay
 name: CrazyMaze
-version: 1.5
+version: 2.0
+api-version: 1.13
 softdepend: [MrCore_BukkitImpl]
 
 commands:
