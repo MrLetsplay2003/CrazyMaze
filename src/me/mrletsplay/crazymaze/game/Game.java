@@ -14,12 +14,18 @@ import org.bukkit.util.Vector;
 
 import me.mrletsplay.crazymaze.arena.Arena;
 import me.mrletsplay.crazymaze.arena.ArenaLayout;
+import me.mrletsplay.crazymaze.generation.BuildTask;
+import me.mrletsplay.crazymaze.generation.BuiltArena;
+import me.mrletsplay.crazymaze.generation.MazeBuilder;
+import me.mrletsplay.crazymaze.generation.MazeBuilderProperties;
 import me.mrletsplay.crazymaze.main.Config;
 import me.mrletsplay.crazymaze.main.CrazyMaze;
-import me.mrletsplay.crazymaze.main.Maze3D;
 import me.mrletsplay.crazymaze.main.Message;
 import me.mrletsplay.crazymaze.main.Powerup;
 import me.mrletsplay.crazymaze.main.Tools;
+import me.mrletsplay.crazymaze.maze.Maze3D;
+import me.mrletsplay.crazymaze.maze.MazeGenerator;
+import me.mrletsplay.crazymaze.maze.MazeLayer;
 
 public class Game {
 	
@@ -31,19 +37,18 @@ public class Game {
 	private int gameTime;
 	private ArenaLayout layout;
 	private List<Player> players;
-	public Location arenaLoc;
-	public Maze3D panel;
-	public List<Integer> buildTaskIDs;
-	public HashMap<Player, VotingData> votes;
+	private BuiltArena builtArena;
+	private BuildTask task;
+	private HashMap<Player, VotingData> votes;
 	private double itemBuf = 0, dPS;
 	private List<ArenaLayout> layouts;
+	private Location winSign;
 	
 	public Game(Arena arena) {
 		this.arena = arena;
 		this.stage = GameStage.WAITING;
 		this.countdown = -1;
 		this.r = new Random();
-		this.buildTaskIDs = new ArrayList<>();
 		this.votes = new HashMap<>();
 		this.dPS = 1/(Config.dropInterval/(double)(arena.getSize()*arena.getSize()));
 		players = new ArrayList<>();
@@ -81,7 +86,7 @@ public class Game {
 				countdown = 10;
 			}
 		}
-		arena.updSign();
+		arena.updateSign();
 	}
 	
 	public void tick() {
@@ -104,7 +109,7 @@ public class Game {
 					ItemStack i = Powerup.values()[r.nextInt(Powerup.values().length)].item;
 					int x = r.nextInt(arena.getSize())+1, y = r.nextInt(arena.getSize())+1;
 					int sc = Config.wallWidth+Config.pathWidth;
-					arenaLoc.getWorld().dropItem(new Location(Config.cmWorld, x*sc, Config.MAZE_Y+1, y*sc).add(0.5, 0, 0.5), i);
+//					builtArena.getArenaLocation().getWorld().dropItem(new Location(Config.cmWorld, x*sc, Config.MAZE_Y+1, y*sc).add(0.5, 0, 0.5), i);
 					itemBuf--;
 				}
 			}
@@ -166,7 +171,7 @@ public class Game {
 		}else if((players.size() <= 1 && arena.getMinPlayers() > 1) || players.size() == 0){
 			stop(false, Config.getMessage(Message.INGAME_KICK_EVERYONE_LEFT));
 		}
-		arena.updSign();
+		arena.updateSign();
 	}
 	
 	public List<Player> getPlayers() {
@@ -177,7 +182,7 @@ public class Game {
 		if(!hasEnoughPlayers()) return;
 		
 		stage = GameStage.GENERATING;
-		arena.updSign();
+		arena.updateSign();
 		
 		for(Player p : players) {
 			if(p.getOpenInventory()!=null) {
@@ -189,22 +194,53 @@ public class Game {
 		
 		applyLayoutVotes();
 		
-		this.panel = Tools.setupArena(this, layout, () ->{
-			Location pL = arenaLoc.clone().add(new Vector(1, 1, 1));
-			for(Player p : players) {
-				p.teleport(pL);
-				p.sendMessage(Config.getMessage(Message.INGAME_COUNTDOWN_GO));
-			}
+//		this.maze = Tools.setupArena(this, layout, () ->{
+//			Location pL = arenaLoc.clone().add(new Vector(1, 1, 1));
+//			for(Player p : players) {
+//				p.teleport(pL);
+//				p.sendMessage(Config.getMessage(Message.INGAME_COUNTDOWN_GO));
+//			}
+//			
+//			applyTimeVotes();
+//			
+//			stage = GameStage.RUNNING;
+//			arena.updSign();
+//		}, () -> {
+//			for(Player p : players) {
+//				p.sendMessage(Config.getMessage(Message.INGAME_ARENA_LOADING_2, "time", Tools.formatTime((int) (maze.i*50))));
+//			}
+//		});
+		
+		new Thread(() -> {
+			MazeGenerator generator = new MazeGenerator(0.05);
 			
-			applyTimeVotes();
+			Maze3D m3d = new Maze3D(arena.getSize(), arena.getSize(), 1);
+			MazeLayer layer = m3d.getLayer(0);
+			generator.populateLayer(layer, layer.getCell(0, 0), layer.getCell(layer.getSizeX() - 1, layer.getSizeY() - 1));
 			
-			stage = GameStage.RUNNING;
-			arena.updSign();
-		}, () -> {
+			Location arenaLocation = Tools.getNextSpiralLocation();
+			
+			MazeBuilderProperties props = new MazeBuilderProperties(2, 1, 3, layout.getFloor(), layout.getWalls(), layout.getBetween());
+			
+			builtArena = new BuiltArena(props, m3d, arenaLocation);
+			
+			BuildTask task = MazeBuilder.buildLayer(arenaLocation, layer, props);
+			task.execute(20, () -> {
+				Location pL = builtArena.getArenaLocation().clone().add(new Vector(1.5, 1.5, 1.5));
+				for(Player p : players) {
+					p.teleport(pL);
+					p.sendMessage(Config.getMessage(Message.INGAME_COUNTDOWN_GO));
+				}
+				
+				applyTimeVotes();
+				
+				stage = GameStage.RUNNING;
+				arena.updateSign();
+			});
 			for(Player p : players) {
-				p.sendMessage(Config.getMessage(Message.INGAME_ARENA_LOADING_2, "time", Tools.formatTime((int) (panel.i*50))));
+				p.sendMessage(Config.getMessage(Message.INGAME_ARENA_LOADING_2, "time", Tools.formatTime((int) (task.getExpectedTimeTicks() * 50))));
 			}
-		});
+		}).start();
 	}
 	
 	private void applyTimeVotes() {
@@ -225,7 +261,7 @@ public class Game {
 					break;
 			}
 		}
-		if(!Tools.isEmpty(gTVotes)) {
+		if(!Tools.isAllZeros(gTVotes)) {
 			List<Integer> his = Tools.getHighestIs(gTVotes);
 			int hi = his.get(r.nextInt(his.size()));
 			switch(hi) {
@@ -265,7 +301,7 @@ public class Game {
 					break;
 			}
 		}
-		if(!Tools.isEmpty(layoutVotes)) {
+		if(!Tools.isAllZeros(layoutVotes)) {
 			List<Integer> his = Tools.getHighestIs(layoutVotes);
 			int hi = his.get(r.nextInt(his.size()));
 			switch(hi) {
@@ -302,23 +338,24 @@ public class Game {
 			}
 		}
 		
-		for(Integer tID : buildTaskIDs) {
-			Bukkit.getScheduler().cancelTask(tID);
-		}
-		
 		if(stage.equals(GameStage.RUNNING) || stage.equals(GameStage.GENERATING) || (force && !stage.equals(GameStage.WAITING))) {
 			stage = GameStage.RESETTING;
-			Tools.resetArena(this, force, () -> {
+//			Tools.resetArena(this, force, () -> {
+//				Games.games.remove(this.arena);
+//				stage = GameStage.WAITING;
+//				arena.updSign();
+//			});
+			MazeBuilder.resetMaze(builtArena.getArenaLocation(), builtArena.getMaze(), builtArena.getBuilderProperties()).execute(20, () -> {
 				Games.games.remove(this.arena);
 				stage = GameStage.WAITING;
-				arena.updSign();
+				arena.updateSign();
 			});
 		}else{
 			Games.games.remove(this.arena);
 		}
 		
 		players.clear();
-		arena.updSign();
+		arena.updateSign();
 	}
 	
 	public boolean hasEnoughPlayers() {
@@ -345,8 +382,8 @@ public class Game {
 		this.countdown = countdown;
 	}
 	
-	public Maze3D getPanel() {
-		return panel;
+	public BuiltArena getBuiltArena() {
+		return builtArena;
 	}
 	
 	public VotingData getVotingData(Player p) {
@@ -357,6 +394,14 @@ public class Game {
 	
 	public void setVotingData(Player p, VotingData d) {
 		votes.put(p, d);
+	}
+	
+	public void setWinSign(Location winSign) {
+		this.winSign = winSign;
+	}
+	
+	public Location getWinSign() {
+		return winSign;
 	}
 	
 	public static class VotingData{

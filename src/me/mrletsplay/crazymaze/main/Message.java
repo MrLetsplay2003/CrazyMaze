@@ -41,6 +41,7 @@ public enum Message {
 	COMMAND_START_SKIPPED("command.start.skipped", "%prefix% §aCountdown skipped"),
 	COMMAND_LIST_TITLE("command.list.title", "%prefix% §aAll Arenas:"),
 	COMMAND_LIST_ENTRY("command.list.entry", "- %name% §7(%size%x, Powerups: %powerups%)"),
+	COMMAND_HELP_UNKNOWN_COMMAND("command.help.unknown-command", "%prefix% §cUnknown command"),
 
 	INGAME_KICK_EDIT("ingame.kick-edit", "%prefix% §cYou were kicked from the game because the arena is being edited"),
 	INGAME_PLAYER_JOINED("ingame.player-joined", "%prefix% §7%player% §ajoined the game §8[§7%currplayers%/%maxplayers%§8]"),
@@ -75,6 +76,17 @@ public enum Message {
 	GUI_MAZE_LAYOUT_RANDOM("gui.maze-layout.random", "§7Random"),
 	GUI_MAZE_LAYOUT_NOT_AVAILABLE("gui.maze-layout.not-available", "§cThat option is not available"),
 	GUI_VOTING_MAZE_DISABLED("gui.voting-maze-disabled", "§cLayout voting is disabled on this map"),
+	
+	SIGN_JOIN_LINE_1("sign.join.line.1", "§8[§6Crazy§5Maze§8]"),
+	SIGN_JOIN_LINE_2("sign.join.line.2", "%name% §8(%size%x)"),
+	SIGN_JOIN_LINE_3_POWERUPS("sign.join.line.3.powerups", "§5P §8[§7%players%/%min-players%/%max-players%§8]"),
+	SIGN_JOIN_LINE_3_NO_POWERUPS("sign.join.line.3.no-powerups", "§aV §8[§7%players%/%min-players%/%max-players%§8]"),
+	SIGN_JOIN_LINE_4_WAITING("sign.join.line.4.waiting", "§7Waiting..."),
+	SIGN_JOIN_LINE_4_RUNNING("sign.join.line.4.running", "§aRunning"),
+	SIGN_JOIN_LINE_4_RESTARTING("sign.join.line.4.restarting", "§cRestarting..."),
+
+	SIGN_FINISH_LINE_1("sign.finish.line.1", "§8[§6Crazy§5Maze§8]"),
+	SIGN_FINISH_LINE_2("sign.finish.line.2", "§aFinish"),
 	;
 	
 	private final String

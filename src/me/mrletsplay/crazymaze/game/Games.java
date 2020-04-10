@@ -1,5 +1,7 @@
 package me.mrletsplay.crazymaze.game;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Location;
@@ -11,6 +13,10 @@ import me.mrletsplay.crazymaze.main.Config;
 public class Games {
 
 	public static ConcurrentHashMap<Arena, Game> games = new ConcurrentHashMap<Arena, Game>();
+	
+	public static List<Game> getGames() {
+		return new ArrayList<>(games.values());
+	}
 	
 	public static Game getGame(Arena a) {
 		return games.get(a);

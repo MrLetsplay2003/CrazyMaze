@@ -15,7 +15,7 @@ public class UpdateChecker {
 	public static void sendUpdateMessage(Result r, Player... pls) {
 		for(Player p : pls){
 			p.sendMessage("§aThere's an update available for CrazyMaze");
-			p.sendMessage("§c"+CrazyMaze.PLUGIN_VERSION+" §r-> §b"+r.updVer+":");
+			p.sendMessage("§c"+CrazyMaze.pluginVersion+" §r-> §b"+r.updVer+":");
 			for(String ln : r.updChlog){
 				p.sendMessage(ChatColor.translateAlternateColorCodes('&', ln));
 			}
@@ -27,7 +27,7 @@ public class UpdateChecker {
 			URL updUrl = new URL("https://graphite-official.com/api/plugin-data/CrazyMaze/version.txt");
 			BufferedReader r = new BufferedReader(new InputStreamReader(updUrl.openStream()));
 			String ver = r.readLine();
-			boolean uA = !ver.equalsIgnoreCase(CrazyMaze.PLUGIN_VERSION);
+			boolean uA = !ver.equalsIgnoreCase(CrazyMaze.pluginVersion);
 			List<String> chL = new ArrayList<>();
 			if(uA){
 				String ln;

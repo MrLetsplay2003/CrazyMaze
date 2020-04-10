@@ -11,25 +11,18 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
-import me.mrletsplay.crazymaze.arena.ArenaLayout;
-import me.mrletsplay.crazymaze.game.Game;
 import me.mrletsplay.crazymaze.game.GameStage;
 import me.mrletsplay.crazymaze.game.Games;
 import me.mrletsplay.mrcore.config.CustomConfig;
 
 public class Tools {
-	
-	private static int layers = 1;
 	
 	public static void setMaterial(CustomConfig cfg, String path, MaterialWithData materialWithData) {
 		String s = materialWithData.getMaterial().name().toLowerCase();
@@ -47,55 +40,55 @@ public class Tools {
 		return new MaterialWithData(m, d);
 	}
 	
-	public static Maze3D setupArena(Game g, ArenaLayout layout, Runnable onFinished, Runnable pFinished) {
-		Location loc = getNextSpiralLocation();
-		g.arenaLoc = loc;
-		Maze3D p = new Maze3D(layout.getFloor().getMaterial(), (byte) layout.getFloor().getData(), layout.getWalls().getMaterial(), (byte) layout.getWalls().getData(), layout.getBetween().getMaterial(), (byte) layout.getBetween().getData());
-		g.panel = p;
-		new Thread(() -> {
-			p.init(loc.getBlockX(), loc.getBlockY()+1, loc.getBlockZ(), g.getArena().getSize(), Config.wallWidth, Config.pathWidth, layers, g.getArena().powerupsEnabled(), onFinished, pFinished, new ArrayList<>());
-		}).start();
-		return p;
-	}
+//	public static Maze3D setupArena(Game g, ArenaLayout layout, Runnable onFinished, Runnable pFinished) {
+//		Location loc = getNextSpiralLocation();
+//		g.arenaLoc = loc;
+//		Maze3D p = new Maze3D(layout.getFloor().getMaterial(), (byte) layout.getFloor().getData(), layout.getWalls().getMaterial(), (byte) layout.getWalls().getData(), layout.getBetween().getMaterial(), (byte) layout.getBetween().getData());
+//		g.maze = p;
+//		new Thread(() -> {
+//			p.init(loc.getBlockX(), loc.getBlockY()+1, loc.getBlockZ(), g.getArena().getSize(), Config.wallWidth, Config.pathWidth, layers, g.getArena().powerupsEnabled(), onFinished, pFinished, new ArrayList<>());
+//		}).start();
+//		return p;
+//	}
 	
-	public static void resetArena(Game g, boolean force, Runnable onFinished) {
-		if(!force) {
-			new Thread(() -> {
-				resetRaw(g, force, onFinished);
-			}).start();
-		}else {
-			resetRaw(g, force, onFinished);
-		}
-	}
+//	public static void resetArena(Game g, boolean force, Runnable onFinished) {
+//		if(!force) {
+//			new Thread(() -> {
+//				resetRaw(g, force, onFinished);
+//			}).start();
+//		}else {
+//			resetRaw(g, force, onFinished);
+//		}
+//	}
 	
-	private static void resetRaw(Game g, boolean force, Runnable onFinished) {
-		if(!force) g.getPanel().tasks.forEach(BukkitTask::cancel);
-		if(g.getPanel()!=null) {
-			Location loc = g.arenaLoc;
-			int sc = Config.wallWidth+Config.pathWidth;
-			g.getPanel().i = 0;
-			if(!force) {
-				for(int x = loc.getBlockX()-Config.wallWidth; x < loc.getBlockX()+g.getArena().getSize()*sc+Config.wallWidth-1; x++) {
-					g.getPanel().fill(x, loc.getBlockY(), loc.getBlockZ()-Config.wallWidth,
-									  1, layers*(Maze3D.wallHeight+1)+1, g.getArena().getSize()*sc+Config.wallWidth,
-							Material.AIR,Config.cmWorld,1,
-							(x == loc.getBlockX()+g.getArena().getSize()*sc+Config.wallWidth-2?onFinished:null));
-				}
-			}else {
-				for(int x = loc.getBlockX()-Config.wallWidth; x < loc.getBlockX()+g.getArena().getSize()*sc+Config.wallWidth-1; x++) {
-					g.getPanel().fill_r(x, loc.getBlockY(), loc.getBlockZ()-Config.wallWidth,
-									  1, layers*(Maze3D.wallHeight+1)+1, g.getArena().getSize()*sc+Config.wallWidth,
-							Material.AIR,Config.cmWorld,
-							(x == loc.getBlockX()+g.getArena().getSize()*sc+Config.wallWidth-2?onFinished:null));
-				}
-			}
-			Bukkit.getScheduler().runTask(CrazyMaze.pl, () -> {
-				for(Entity e : Config.cmWorld.getNearbyEntities(new Location(Config.cmWorld, loc.getBlockX()+g.getArena().getSize()*sc/2, loc.getBlockY(), loc.getBlockZ()+g.getArena().getSize()*sc/2), g.getArena().getSize()*sc/2+1, Maze3D.wallHeight, g.getArena().getSize()*sc/2+1)) {
-					e.remove();
-				}
-			});
-		}
-	}
+//	private static void resetRaw(Game g, boolean force, Runnable onFinished) {
+//		if(!force) g.getPanel().tasks.forEach(BukkitTask::cancel);
+//		if(g.getPanel()!=null) {
+//			Location loc = g.arenaLoc;
+//			int sc = Config.wallWidth+Config.pathWidth;
+//			g.getPanel().i = 0;
+//			if(!force) {
+//				for(int x = loc.getBlockX()-Config.wallWidth; x < loc.getBlockX()+g.getArena().getSize()*sc+Config.wallWidth-1; x++) {
+//					g.getPanel().fill(x, loc.getBlockY(), loc.getBlockZ()-Config.wallWidth,
+//									  1, layers*(Maze3D.wallHeight+1)+1, g.getArena().getSize()*sc+Config.wallWidth,
+//							Material.AIR,Config.cmWorld,1,
+//							(x == loc.getBlockX()+g.getArena().getSize()*sc+Config.wallWidth-2?onFinished:null));
+//				}
+//			}else {
+//				for(int x = loc.getBlockX()-Config.wallWidth; x < loc.getBlockX()+g.getArena().getSize()*sc+Config.wallWidth-1; x++) {
+//					g.getPanel().fill_r(x, loc.getBlockY(), loc.getBlockZ()-Config.wallWidth,
+//									  1, layers*(Maze3D.wallHeight+1)+1, g.getArena().getSize()*sc+Config.wallWidth,
+//							Material.AIR,Config.cmWorld,
+//							(x == loc.getBlockX()+g.getArena().getSize()*sc+Config.wallWidth-2?onFinished:null));
+//				}
+//			}
+//			Bukkit.getScheduler().runTask(CrazyMaze.pl, () -> {
+//				for(Entity e : Config.cmWorld.getNearbyEntities(new Location(Config.cmWorld, loc.getBlockX()+g.getArena().getSize()*sc/2, loc.getBlockY(), loc.getBlockZ()+g.getArena().getSize()*sc/2), g.getArena().getSize()*sc/2+1, Maze3D.wallHeight, g.getArena().getSize()*sc/2+1)) {
+//					e.remove();
+//				}
+//			});
+//		}
+//	}
 	
 	public static Location getNextSpiralLocation() {
 		int x = 0, y = 0, tX = 0, tY = 0, n = 1, dir = 0;
@@ -132,7 +125,7 @@ public class Tools {
 	}
 	
 	private static boolean containsLoc(Location l) {
-		return Games.games.values().stream().anyMatch(g -> !g.getStage().equals(GameStage.WAITING) && g.arenaLoc != null && g.arenaLoc.equals(l));
+		return Games.games.values().stream().anyMatch(g -> !g.getStage().equals(GameStage.WAITING) && g.getBuiltArena() != null && g.getBuiltArena().getArenaLocation().equals(l));
 	}
 	
 	public static void removePotionEffects(Player p) {
@@ -202,11 +195,11 @@ public class Tools {
 		}
 	}
 	
-	public static Vector getField(Location l, Game g) {
-		int x = (l.getBlockX()-g.arenaLoc.getBlockX())/(g.getPanel().sc);
-		int z = (l.getBlockZ()-g.arenaLoc.getBlockZ())/(g.getPanel().sc);
-		return new Vector(x, 0, z);
-	}
+//	public static Vector getField(Location l, Game g) {
+//		int x = (l.getBlockX()-g.arenaLoc.getBlockX())/(g.getPanel().sc);
+//		int z = (l.getBlockZ()-g.arenaLoc.getBlockZ())/(g.getPanel().sc);
+//		return new Vector(x, 0, z);
+//	}
 	
 	public static AbsoluteDirection get(Vector dir) {
 		dir = dir.normalize();
@@ -233,7 +226,7 @@ public class Tools {
 		return null;
 	}
 	
-	public static enum AbsoluteDirection{
+	public static enum AbsoluteDirection {
 		X_POS("X_NEG"),
 		X_NEG("X_POS"),
 		Z_POS("Z_NEG"),
@@ -271,9 +264,9 @@ public class Tools {
 		return hi;
 	}
 	
-	public static boolean isEmpty(int[] is) {
+	public static boolean isAllZeros(int[] is) {
 		for(int i : is) {
-			if(i!=0) return false;
+			if(i != 0) return false;
 		}
 		return true;
 	}

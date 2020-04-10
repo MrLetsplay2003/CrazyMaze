@@ -37,21 +37,21 @@ public class Config {
 	public static List<Arena> arenas = new ArrayList<>();
 	public static List<ArenaLayout> arenaLayouts = new ArrayList<>();
 	
-	public static String prefix, prefix_s;
+	public static String prefix, inventoryPrefix;
 	
-	public static String signLayout0 = "§8[§6Crazy§5Maze§8]";
-	public static String signLayout1 = "%name% §8(%size%x)";
-	public static String signLayout1_2 = "§aFinish";
-	public static String signLayout2p = "§5P §8[§7%pl%/%npl%/%mpl%§8]";
-	public static String signLayout2np = "§aV §8[§7%pl%/%npl%/%mpl%§8]";
-	public static String signLayout3w = "§7Waiting...";
-	public static String signLayout3i = "§aRunning";
-	public static String signLayout3r = "§cRestarting...";
+//	public static String signLayout0 = "§8[§6Crazy§5Maze§8]";
+//	public static String signLayout1 = "%name% §8(%size%x)";
+//	public static String signLayout1_2 = "§aFinish";
+//	public static String signLayout2p = "§5P §8[§7%pl%/%npl%/%mpl%§8]";
+//	public static String signLayout2np = "§aV §8[§7%pl%/%npl%/%mpl%§8]";
+//	public static String signLayout3w = "§7Waiting...";
+//	public static String signLayout3i = "§aRunning";
+//	public static String signLayout3r = "§cRestarting...";
 	public static World cmWorld;
 	
 	public static int
-		countdownMinP,
-		countdownMaxP,
+		countdownMinPlayers,
+		countdownMaxPlayers,
 		wallTime;
 		
 	public static double
@@ -117,9 +117,9 @@ public class Config {
 		
 		prefix = config.getString("prefix", "§8[§6Crazy§5Maze§8]", true);
 		config.setComment("inventory-prefix", "Remember that the inventory prefix shouldn't be too long as inventory names cannot be longer than 32 characters (including color codes)");
-		prefix_s = config.getString("inventory-prefix", "§8[§6C§5M§8]", true);
-		countdownMinP = config.getInt("countdown.min-players", 60, true);
-		countdownMaxP = config.getInt("countdown.max-players", 10, true);
+		inventoryPrefix = config.getString("inventory-prefix", "§8[§6C§5M§8]", true);
+		countdownMinPlayers = config.getInt("countdown.min-players", 60, true);
+		countdownMaxPlayers = config.getInt("countdown.max-players", 10, true);
 		config.setComment("generation.speed", "Higher = Faster. Default: 1.0\n"
 											+ "Note that increasing this value might result in server lags for bigger maps");
 		genSpeed = config.getDouble("generation.speed", 1D, true);
@@ -132,8 +132,8 @@ public class Config {
 		config.setComment("hide-tablist", "When this option is enabled, players that are not in the same game as you will be hidden from the tablist");
 		hideTablist = config.getBoolean("hide-tablist", true, true);
 		
-		votingInvName = prefix_s+" §8Game Options";
-		choiceInvName = prefix_s+" §8Vote";
+		votingInvName = inventoryPrefix+" §8Game Options";
+		choiceInvName = inventoryPrefix+" §8Vote";
 		
 		config.setComment("powerups.wall-time", "The time it takes before a wall placed by the \"Barrier\" powerup disappears");
 		wallTime = config.getInt("powerups.wall-time", 3, true);

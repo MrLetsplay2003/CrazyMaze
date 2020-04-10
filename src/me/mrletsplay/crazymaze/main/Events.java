@@ -1,8 +1,6 @@
 package me.mrletsplay.crazymaze.main;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -18,15 +16,11 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.util.Vector;
 
 import me.mrletsplay.crazymaze.arena.Arena;
 import me.mrletsplay.crazymaze.game.Game;
 import me.mrletsplay.crazymaze.game.GameStage;
 import me.mrletsplay.crazymaze.game.Games;
-import me.mrletsplay.crazymaze.main.Tools.AbsoluteDirection;
-import me.mrletsplay.mrcore.bukkitimpl.versioned.VersionedMaterial;
 
 public class Events implements Listener{
 
@@ -34,46 +28,46 @@ public class Events implements Listener{
 	public void onPlayerInteract(PlayerInteractEvent e) {
 		if(e.getAction().equals(Action.RIGHT_CLICK_BLOCK) && e.getClickedBlock().getState() instanceof Sign) {
 			Sign s = (Sign) e.getClickedBlock().getState();
-			if(s.getLine(0).equals(Config.signLayout0)) {
-				if(s.getLine(1).equals(Config.signLayout1_2)) { 
-					if(Games.isInGame(e.getPlayer())) {
-						Game g = Games.getGame(e.getPlayer());
-						if(!g.getStage().equals(GameStage.WAITING)) {
-							Player winner = e.getPlayer();
-							for(Player p : g.getPlayers()) {
-								p.sendMessage(Config.getMessage(Message.INGAME_END_WIN, "winner", winner.getDisplayName()));
-							}
-							g.stop(false);
-							if(g.getArena().getOnWin() != null) Bukkit.dispatchCommand(Bukkit.getConsoleSender(), g.getArena().getOnWin()
-									.replace("%winner%", winner.getName())
-									.replace("%winneruuid%", winner.getUniqueId().toString()));
+			Game game = Games.getGame(e.getPlayer());
+			if(game != null && game.getWinSign().equals(e.getClickedBlock().getLocation())) { 
+				if(Games.isInGame(e.getPlayer())) {
+					Game g = Games.getGame(e.getPlayer());
+					if(g.getStage().equals(GameStage.RUNNING)) {
+						Player winner = e.getPlayer();
+						for(Player p : g.getPlayers()) {
+							p.sendMessage(Config.getMessage(Message.INGAME_END_WIN, "winner", winner.getDisplayName()));
 						}
-					}else {
-						e.getPlayer().sendMessage(Config.getMessage(Message.OTHER_NOT_INGAME));
+						g.stop(false);
+						if(g.getArena().getOnWin() != null) Bukkit.dispatchCommand(Bukkit.getConsoleSender(), g.getArena().getOnWin()
+								.replace("%winner%", winner.getName())
+								.replace("%winneruuid%", winner.getUniqueId().toString()));
 					}
 				}else {
+					e.getPlayer().sendMessage(Config.getMessage(Message.OTHER_NOT_INGAME));
+				}
+			}else {
+				Game g = Games.getSign(s.getLocation());
+				if(g != null) {
 					if(Games.isInGame(e.getPlayer())) {
-						e.getPlayer().sendMessage(Config.getMessage(Message.OTHER_NOT_INGAME));
+						e.getPlayer().sendMessage(Config.getMessage(Message.OTHER_ALREADY_INGAME));
 						return;
 					}
-					Game g = Games.getSign(s.getLocation());
-					if(g!=null) {
-						if(g.getStage().equals(GameStage.GENERATING) || g.getStage().equals(GameStage.RUNNING)) {
-							e.getPlayer().sendMessage(Config.getMessage(Message.OTHER_GAME_RUNNING));
-							return;
-						}
-						
-						if(g.getStage().equals(GameStage.RESETTING)) {
-							e.getPlayer().sendMessage(Config.getMessage(Message.OTHER_GAME_RESTARTING));
-							return;
-						}
-						
-						if(g.getPlayers().size()>=g.getArena().getMaxPlayers()) {
-							e.getPlayer().sendMessage(Config.getMessage(Message.OTHER_GAME_FULL));
-							return;
-						}
-						g.addPlayer(e.getPlayer());
+					
+					if(g.getStage().equals(GameStage.GENERATING) || g.getStage().equals(GameStage.RUNNING)) {
+						e.getPlayer().sendMessage(Config.getMessage(Message.OTHER_GAME_RUNNING));
+						return;
 					}
+					
+					if(g.getStage().equals(GameStage.RESETTING)) {
+						e.getPlayer().sendMessage(Config.getMessage(Message.OTHER_GAME_RESTARTING));
+						return;
+					}
+					
+					if(g.getPlayers().size()>=g.getArena().getMaxPlayers()) {
+						e.getPlayer().sendMessage(Config.getMessage(Message.OTHER_GAME_FULL));
+						return;
+					}
+					g.addPlayer(e.getPlayer());
 				}
 			}
 		}else if(e.getItem()!=null && e.getItem().hasItemMeta() && e.getItem().getItemMeta().hasDisplayName()) {
@@ -81,7 +75,7 @@ public class Events implements Listener{
 			if(Games.isInGame(e.getPlayer())) {
 				Game g = Games.getGame(e.getPlayer());
 				Player p = e.getPlayer();
-				if(g.getStage().equals(GameStage.RUNNING)) {
+				/*if(g.getStage().equals(GameStage.RUNNING)) {
 					if(Config.matchesItem(e.getItem(), Powerup.PASS_WALL.item)) {
 						if(e.getAction().equals(Action.RIGHT_CLICK_BLOCK) && e.getClickedBlock().getType().equals(g.getLayout().getWalls().getMaterial())) {
 							if(p.getLocation().distance(e.getClickedBlock().getLocation())<2) {
@@ -132,7 +126,7 @@ public class Events implements Listener{
 							
 						}
 					}
-				}else if(g.getStage().equals(GameStage.WAITING)) {
+				}else */if(g.getStage().equals(GameStage.WAITING)) {
 					if(e.getAction().equals(Action.RIGHT_CLICK_BLOCK) || e.getAction().equals(Action.RIGHT_CLICK_AIR)){
 						if(dName.equals(Config.gameOptions.getItemMeta().getDisplayName())) {
 							p.openInventory(GUIs.getVotingGUI(g.getArena()).getForPlayer(p));
@@ -154,8 +148,8 @@ public class Events implements Listener{
 			Game g = Games.getGame(e.getPlayer());
 			g.removePlayer(e.getPlayer());
 		}
-		if(CrazyMaze.arenas.containsKey(e.getPlayer())) {
-			CrazyMaze.arenas.remove(e.getPlayer());
+		if(CrazyMaze.arenas.containsKey(e.getPlayer().getUniqueId())) {
+			CrazyMaze.arenas.remove(e.getPlayer().getUniqueId());
 		}
 	}
 	
@@ -228,7 +222,7 @@ public class Events implements Listener{
 				return;
 			}
 			a.addSignLocation(e.getBlock().getLocation());
-			a.updSign();
+			a.updateSign();
 			Config.saveArena(a);
 		}
 	}

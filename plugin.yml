@@ -1,4 +1,4 @@
-main: me.mrletsplay.crazymaze.main.Main
+main: me.mrletsplay.crazymaze.main.CrazyMaze
 author: MrLetsplay
 name: CrazyMaze
 version: 2.0

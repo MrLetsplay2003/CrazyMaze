@@ -7,7 +7,9 @@ public enum Powerup {
 	PASS_WALL,
 	CREATE_BARRIER,
 	PROTECT,
-	TOPDOWN_VIEW;
+	TOPDOWN_VIEW,
+	HIGHLIGHT_PLAYERS,
+	COMPASS;
 	
 	public ItemStack item;
 	

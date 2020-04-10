@@ -1,6 +1,7 @@
 package me.mrletsplay.crazymaze.arena;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.bukkit.Location;
@@ -10,6 +11,7 @@ import org.bukkit.block.Sign;
 import me.mrletsplay.crazymaze.game.Game;
 import me.mrletsplay.crazymaze.game.Games;
 import me.mrletsplay.crazymaze.main.Config;
+import me.mrletsplay.crazymaze.main.Message;
 
 public class Arena {
 
@@ -140,42 +142,46 @@ public class Arena {
 		return layouts;
 	}
 	
-	public void updSign() {
+	public void updateSign() {
 //		Game g;
 //		if((g = Games.getGame(this)) != null) {
 //			g.updSign();
 //			return;
 //		}
 		
-		for(Location loc : signLocations) {
+		Iterator<Location> lIt = signLocations.iterator();
+		while(lIt.hasNext()) {
+			Location loc = lIt.next();
 			Block b = loc.getBlock();
-			if(!(b.getState() instanceof Sign)) continue;
+			if(!(b.getState() instanceof Sign)) {
+				lIt.remove();
+				continue;
+			}
 			Sign s = (Sign)b.getState();
 			
 			Game g = Games.getGame(this);
 			
-			s.setLine(0, Config.signLayout0);
-			s.setLine(1, Config.signLayout1.replace("%name%", getName()).replace("%size%", ""+getSize()));
-			String sl2 = powerupsEnabled() ? Config.signLayout2p : Config.signLayout2np;
-			s.setLine(2, sl2.replace("%pl%", g == null ? "0" : ""+g.getPlayers().size()).replace("%mpl%", ""+getMaxPlayers()).replace("%npl%", ""+getMinPlayers()));
+			s.setLine(0, Config.getMessage(Message.SIGN_JOIN_LINE_1));
+			s.setLine(1, Config.getMessage(Message.SIGN_JOIN_LINE_2, "name", getName(), "size", "" + getSize()));
+			s.setLine(2, Config.getMessage(powerupsEnabled() ? Message.SIGN_JOIN_LINE_3_POWERUPS : Message.SIGN_JOIN_LINE_3_NO_POWERUPS, "players", g == null ? "0" : "" + g.getPlayers().size(), "min-players", "" + getMaxPlayers(), "max-players", "" + getMinPlayers()));
 			
 			if(g == null) {
-				s.setLine(3, Config.signLayout3w);
+				s.setLine(3, Config.getMessage(Message.SIGN_JOIN_LINE_4_WAITING));
 				s.update();
 			}else {
 				String sl3 = "§c???";
 				switch(g.getStage()) {
 					case WAITING:
-						sl3 = Config.signLayout3w;
+						sl3 = Config.getMessage(Message.SIGN_JOIN_LINE_4_WAITING);
 						break;
 					case GENERATING:
-						sl3 = Config.signLayout3i;
+						sl3 = Config.getMessage(Message.SIGN_JOIN_LINE_4_RUNNING);
 						break;
 					case RUNNING:
-						sl3 = Config.signLayout3i;
+						sl3 = Config.getMessage(Message.SIGN_JOIN_LINE_4_RUNNING);
 						break;
 					case RESETTING:
-						sl3 = Config.signLayout3r;
+						sl3 = Config.getMessage(Message.SIGN_JOIN_LINE_4_RESTARTING);
 						break;
 				}
 				s.setLine(3, sl3);
