@@ -37,7 +37,7 @@ public class Games {
 	}
 	
 	public static boolean isInGame(Player p) {
-		return getGame(p)!=null;
+		return getGame(p) != null;
 	}
 	
 	public static Game getGame(Player p) {

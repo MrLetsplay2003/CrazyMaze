@@ -19,6 +19,10 @@ public class MazeCell {
 		this.walls = EnumSet.allOf(MazeDirection.class);
 	}
 	
+	public MazeLayer getLayer() {
+		return layer;
+	}
+	
 	public int getX() {
 		return x;
 	}

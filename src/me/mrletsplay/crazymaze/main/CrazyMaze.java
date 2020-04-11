@@ -17,7 +17,7 @@ import me.mrletsplay.crazymaze.game.Games;
 
 public class CrazyMaze extends JavaPlugin {
 
-	public static JavaPlugin pl;
+	public static JavaPlugin plugin;
 	public static HashMap<UUID, Arena> backupArenas = new HashMap<>();
 	public static HashMap<UUID, Arena> arenas = new HashMap<>();
 	public static Random r = new Random();
@@ -25,7 +25,7 @@ public class CrazyMaze extends JavaPlugin {
 	
 	@Override
 	public void onEnable() {
-		pl = this;
+		plugin = this;
 		MrCoreBukkitImpl.loadMrCore(this);
 		
 		CommandCrazyMaze cm = CommandCrazyMaze.INSTANCE;
@@ -44,7 +44,7 @@ public class CrazyMaze extends JavaPlugin {
 		
 		CMTimer.init();
 		
-		if (Config.enable_update_check && Config.update_check_on_join) {
+		if (Config.enableUpdateCheck && Config.updateCheckOnJoin) {
 			getLogger().info("Checking for update...");
 			UpdateChecker.Result res = UpdateChecker.checkForUpdate();
 			if(res.updAvailable) {

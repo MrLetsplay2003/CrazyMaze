@@ -18,8 +18,12 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
+import me.mrletsplay.crazymaze.game.Game;
 import me.mrletsplay.crazymaze.game.GameStage;
 import me.mrletsplay.crazymaze.game.Games;
+import me.mrletsplay.crazymaze.generation.BuiltArena;
+import me.mrletsplay.crazymaze.generation.MazeBuilderProperties;
+import me.mrletsplay.crazymaze.maze.MazeCell;
 import me.mrletsplay.mrcore.config.CustomConfig;
 
 public class Tools {
@@ -40,62 +44,12 @@ public class Tools {
 		return new MaterialWithData(m, d);
 	}
 	
-//	public static Maze3D setupArena(Game g, ArenaLayout layout, Runnable onFinished, Runnable pFinished) {
-//		Location loc = getNextSpiralLocation();
-//		g.arenaLoc = loc;
-//		Maze3D p = new Maze3D(layout.getFloor().getMaterial(), (byte) layout.getFloor().getData(), layout.getWalls().getMaterial(), (byte) layout.getWalls().getData(), layout.getBetween().getMaterial(), (byte) layout.getBetween().getData());
-//		g.maze = p;
-//		new Thread(() -> {
-//			p.init(loc.getBlockX(), loc.getBlockY()+1, loc.getBlockZ(), g.getArena().getSize(), Config.wallWidth, Config.pathWidth, layers, g.getArena().powerupsEnabled(), onFinished, pFinished, new ArrayList<>());
-//		}).start();
-//		return p;
-//	}
-	
-//	public static void resetArena(Game g, boolean force, Runnable onFinished) {
-//		if(!force) {
-//			new Thread(() -> {
-//				resetRaw(g, force, onFinished);
-//			}).start();
-//		}else {
-//			resetRaw(g, force, onFinished);
-//		}
-//	}
-	
-//	private static void resetRaw(Game g, boolean force, Runnable onFinished) {
-//		if(!force) g.getPanel().tasks.forEach(BukkitTask::cancel);
-//		if(g.getPanel()!=null) {
-//			Location loc = g.arenaLoc;
-//			int sc = Config.wallWidth+Config.pathWidth;
-//			g.getPanel().i = 0;
-//			if(!force) {
-//				for(int x = loc.getBlockX()-Config.wallWidth; x < loc.getBlockX()+g.getArena().getSize()*sc+Config.wallWidth-1; x++) {
-//					g.getPanel().fill(x, loc.getBlockY(), loc.getBlockZ()-Config.wallWidth,
-//									  1, layers*(Maze3D.wallHeight+1)+1, g.getArena().getSize()*sc+Config.wallWidth,
-//							Material.AIR,Config.cmWorld,1,
-//							(x == loc.getBlockX()+g.getArena().getSize()*sc+Config.wallWidth-2?onFinished:null));
-//				}
-//			}else {
-//				for(int x = loc.getBlockX()-Config.wallWidth; x < loc.getBlockX()+g.getArena().getSize()*sc+Config.wallWidth-1; x++) {
-//					g.getPanel().fill_r(x, loc.getBlockY(), loc.getBlockZ()-Config.wallWidth,
-//									  1, layers*(Maze3D.wallHeight+1)+1, g.getArena().getSize()*sc+Config.wallWidth,
-//							Material.AIR,Config.cmWorld,
-//							(x == loc.getBlockX()+g.getArena().getSize()*sc+Config.wallWidth-2?onFinished:null));
-//				}
-//			}
-//			Bukkit.getScheduler().runTask(CrazyMaze.pl, () -> {
-//				for(Entity e : Config.cmWorld.getNearbyEntities(new Location(Config.cmWorld, loc.getBlockX()+g.getArena().getSize()*sc/2, loc.getBlockY(), loc.getBlockZ()+g.getArena().getSize()*sc/2), g.getArena().getSize()*sc/2+1, Maze3D.wallHeight, g.getArena().getSize()*sc/2+1)) {
-//					e.remove();
-//				}
-//			});
-//		}
-//	}
-	
 	public static Location getNextSpiralLocation() {
 		int x = 0, y = 0, tX = 0, tY = 0, n = 1, dir = 0;
 		boolean a = false;
 		int spacing = 1000;
 		Location loc;
-		while(containsLoc((loc = new Location(Config.cmWorld, x*spacing, Config.MAZE_Y, y*spacing)))) {
+		while(containsLoc((loc = new Location(Config.cmWorld, x * spacing, Config.MAZE_Y, y * spacing)))) {
 			if(x > tX) x--;
 			if(x < tX) x++;
 			if(y > tY) y--;
@@ -103,21 +57,21 @@ public class Tools {
 			if(x == tX && y == tY) {
 				switch(dir) {
 					case 0:
-						tX+=n;
+						tX += n;
 						break;
 					case 1:
-						tY+=n;
+						tY += n;
 						break;
 					case 2:
-						tX-=n;
+						tX -= n;
 						break;
 					case 3:
-						tY-=n;
+						tY -= n;
 						break;
 				}
 				dir++;
-				if(dir>3) dir = 0;
-				n = a?n+1:n;
+				if(dir > 3) dir = 0;
+				n = a ? n + 1 : n;
 				a = !a;
 			}
 		}
@@ -185,21 +139,45 @@ public class Tools {
 	}
 	
 	public static String formatTime(int ms) {
-		String[] formats = new String[] {"s", "min", "h"};
-		if(ms<60000) {
-			return ms/1000+formats[0];
-		}else if(ms<60*60000) {
-			return ms/60000+formats[1];
+		String[] formats = new String[] {" s", " min", " h"};
+		if(ms < 60000) {
+			return ms / 1000 + formats[0];
+		}else if(ms < 60 * 60000) {
+			return ms / 60000 + formats[1];
 		}else {
-			return ms/(60*60000)+formats[2];
+			return ms / (60*60000) + formats[2];
 		}
 	}
 	
-//	public static Vector getField(Location l, Game g) {
-//		int x = (l.getBlockX()-g.arenaLoc.getBlockX())/(g.getPanel().sc);
-//		int z = (l.getBlockZ()-g.arenaLoc.getBlockZ())/(g.getPanel().sc);
-//		return new Vector(x, 0, z);
-//	}
+	public static MazeCell getCell(Game g, Location l) {
+		BuiltArena a = g.getBuiltArena();
+		MazeBuilderProperties props = a.getBuilderProperties();
+		int fieldSize = props.getFieldSize() + props.getWallWidth();
+
+		int h = (l.getBlockY() - a.getArenaLocation().getBlockY()) / (props.getWallHeight() + 1);
+		int x = (l.getBlockX() - a.getArenaLocation().getBlockX()) / fieldSize;
+		int y = (l.getBlockZ() - a.getArenaLocation().getBlockZ()) / fieldSize;
+		
+		if(h < 0 || x < 0 || y < 0 || h >= a.getMaze().getNumLayers() || x >= a.getMaze().getSizeX() || y >= a.getMaze().getSizeY()) return null;
+		return a.getMaze().getLayer(h).getCell(x, y);
+	}
+	
+	public static Location getCellLocation(Location arenaLocation,  MazeBuilderProperties builderProperties, MazeCell cell) {
+		int fieldSize = builderProperties.getFieldSize() + builderProperties.getWallWidth();
+		return arenaLocation.clone().add(new Vector(cell.getX() * fieldSize, 0, cell.getY() * fieldSize));
+	}
+	
+	public static Location getCellLocation(Game g, MazeCell cell) {
+		BuiltArena a = g.getBuiltArena();
+		return getCellLocation(a.getArenaLocation(), a.getBuilderProperties(), cell);
+	}
+	
+	public static Location getCellCenter(Game g, MazeCell cell) {
+		BuiltArena a = g.getBuiltArena();
+		MazeBuilderProperties props = a.getBuilderProperties();
+		
+		return getCellLocation(g, cell).add(new Vector(props.getFieldSize() / 2d + 1, 1, props.getFieldSize() / 2d + 1));
+	}
 	
 	public static AbsoluteDirection get(Vector dir) {
 		dir = dir.normalize();

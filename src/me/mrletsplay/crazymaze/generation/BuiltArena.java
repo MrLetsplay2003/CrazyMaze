@@ -9,11 +9,13 @@ public class BuiltArena {
 	private MazeBuilderProperties builderProperties;
 	private Maze3D maze;
 	private Location arenaLocation;
+	private BuildTask buildTask;
 
-	public BuiltArena(MazeBuilderProperties builderProperties, Maze3D maze, Location arenaLocation) {
+	public BuiltArena(MazeBuilderProperties builderProperties, Maze3D maze, Location arenaLocation, BuildTask buildTask) {
 		this.builderProperties = builderProperties;
 		this.maze = maze;
 		this.arenaLocation = arenaLocation;
+		this.buildTask = buildTask;
 	}
 	
 	public MazeBuilderProperties getBuilderProperties() {
@@ -26,6 +28,14 @@ public class BuiltArena {
 	
 	public Location getArenaLocation() {
 		return arenaLocation;
+	}
+	
+	public BuildTask getBuildTask() {
+		return buildTask;
+	}
+	
+	public void reset(boolean force) {
+		
 	}
 
 }

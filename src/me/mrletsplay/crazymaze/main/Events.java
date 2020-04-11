@@ -29,26 +29,21 @@ public class Events implements Listener{
 		if(e.getAction().equals(Action.RIGHT_CLICK_BLOCK) && e.getClickedBlock().getState() instanceof Sign) {
 			Sign s = (Sign) e.getClickedBlock().getState();
 			Game game = Games.getGame(e.getPlayer());
-			if(game != null && game.getWinSign().equals(e.getClickedBlock().getLocation())) { 
-				if(Games.isInGame(e.getPlayer())) {
-					Game g = Games.getGame(e.getPlayer());
-					if(g.getStage().equals(GameStage.RUNNING)) {
-						Player winner = e.getPlayer();
-						for(Player p : g.getPlayers()) {
-							p.sendMessage(Config.getMessage(Message.INGAME_END_WIN, "winner", winner.getDisplayName()));
-						}
-						g.stop(false);
-						if(g.getArena().getOnWin() != null) Bukkit.dispatchCommand(Bukkit.getConsoleSender(), g.getArena().getOnWin()
-								.replace("%winner%", winner.getName())
-								.replace("%winneruuid%", winner.getUniqueId().toString()));
-					}
-				}else {
-					e.getPlayer().sendMessage(Config.getMessage(Message.OTHER_NOT_INGAME));
+			if(game != null && game.getStage().equals(GameStage.RUNNING)
+					&& game.getBuiltArena().getBuilderProperties().getFinishSignCell().equals(Tools.getCell(game, e.getClickedBlock().getLocation()))) {
+				Player winner = e.getPlayer();
+				for(Player p : game.getPlayers()) {
+					p.sendMessage(Config.getMessage(Message.INGAME_END_WIN, "winner", winner.getDisplayName()));
 				}
+				
+				game.stop(false);
+				if(game.getArena().getOnWin() != null) Bukkit.dispatchCommand(Bukkit.getConsoleSender(), game.getArena().getOnWin()
+						.replace("%winner%", winner.getName())
+						.replace("%winneruuid%", winner.getUniqueId().toString()));
 			}else {
 				Game g = Games.getSign(s.getLocation());
 				if(g != null) {
-					if(Games.isInGame(e.getPlayer())) {
+					if(game != null) {
 						e.getPlayer().sendMessage(Config.getMessage(Message.OTHER_ALREADY_INGAME));
 						return;
 					}
@@ -70,7 +65,7 @@ public class Events implements Listener{
 					g.addPlayer(e.getPlayer());
 				}
 			}
-		}else if(e.getItem()!=null && e.getItem().hasItemMeta() && e.getItem().getItemMeta().hasDisplayName()) {
+		}else if(e.getItem() != null && e.getItem().hasItemMeta() && e.getItem().getItemMeta().hasDisplayName()) {
 			String dName = e.getItem().getItemMeta().getDisplayName();
 			if(Games.isInGame(e.getPlayer())) {
 				Game g = Games.getGame(e.getPlayer());
@@ -131,7 +126,7 @@ public class Events implements Listener{
 						if(dName.equals(Config.gameOptions.getItemMeta().getDisplayName())) {
 							p.openInventory(GUIs.getVotingGUI(g.getArena()).getForPlayer(p));
 						}else if(dName.equals(Config.quitGame.getItemMeta().getDisplayName())) {
-							Bukkit.getScheduler().runTaskLater(CrazyMaze.pl, () -> {
+							Bukkit.getScheduler().runTaskLater(CrazyMaze.plugin, () -> {
 								g.removePlayer(p);
 								p.sendMessage(Config.getMessage(Message.OTHER_GAME_LEFT));
 							}, 1L);
@@ -203,7 +198,7 @@ public class Events implements Listener{
 	@EventHandler
 	public void onJoin(PlayerJoinEvent e) {
 		if(e.getPlayer().hasPermission(Config.PERM_NOTIFY_UPDATE)){
-			if(Config.enable_update_check && Config.update_check_on_join){
+			if(Config.enableUpdateCheck && Config.updateCheckOnJoin){
 				UpdateChecker.Result res = UpdateChecker.checkForUpdate();
 				if(res.updAvailable) {
 					UpdateChecker.sendUpdateMessage(res, e.getPlayer());

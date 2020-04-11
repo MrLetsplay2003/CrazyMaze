@@ -38,7 +38,7 @@ public class CommandCrazyMazeVersion extends BukkitCommand {
 		}
 		
 		p.sendMessage("Current CrazyMaze version: §7" + CrazyMaze.pluginVersion);
-		if(Config.enable_update_check && Config.update_check_on_command) {
+		if(Config.enableUpdateCheck && Config.updateCheckOnCommand) {
 			Result r = UpdateChecker.checkForUpdate();
 			if(r.updAvailable) {
 				UpdateChecker.sendUpdateMessage(r, p);

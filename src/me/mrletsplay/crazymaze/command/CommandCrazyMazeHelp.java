@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 
 import org.bukkit.command.CommandSender;
 
-import me.mrletsplay.crazymaze.arena.Arena;
 import me.mrletsplay.crazymaze.main.Config;
 import me.mrletsplay.crazymaze.main.Message;
 import me.mrletsplay.mrcore.bukkitimpl.command.BukkitCommand;
@@ -47,6 +46,7 @@ public class CommandCrazyMazeHelp extends BukkitCommand {
 			return;
 		}
 		
+		event.getSender().sendMessage(Config.prefix + " §cHelp");
 		c.sendCommandInfo(event.getSender());
 	}
 	

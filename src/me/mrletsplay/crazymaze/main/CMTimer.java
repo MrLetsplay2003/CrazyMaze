@@ -12,7 +12,7 @@ public class CMTimer {
 
 	@SuppressWarnings("deprecation")
 	public static void init() {
-		Bukkit.getScheduler().scheduleSyncRepeatingTask(CrazyMaze.pl, () -> {
+		Bukkit.getScheduler().scheduleSyncRepeatingTask(CrazyMaze.plugin, () -> {
 			Games.games.forEach((a, g) -> {
 				g.getPlayers().forEach(p -> {
 					Block b = p.getLocation().getBlock().getRelative(BlockFace.DOWN);

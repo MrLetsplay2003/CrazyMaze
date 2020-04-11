@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.GameRule;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -28,34 +29,27 @@ public class Config {
 	
 	public static final int MAZE_Y = 1;
 	
-	private static File configFile = new File(CrazyMaze.pl.getDataFolder(), "config.yml");
-	private static File arenasFile = new File(CrazyMaze.pl.getDataFolder(), "arenas.yml");
+	private static File configFile = new File(CrazyMaze.plugin.getDataFolder(), "config.yml");
+	private static File arenasFile = new File(CrazyMaze.plugin.getDataFolder(), "arenas.yml");
 	
-	public static BukkitCustomConfig config = ConfigLoader.loadConfigFromFile(new BukkitCustomConfig(configFile), configFile, true);
-	public static BukkitCustomConfig arenaConfig = ConfigLoader.loadConfigFromFile(new BukkitCustomConfig(arenasFile), arenasFile, true);
-	public static FileCustomConfig messages;
+	private static BukkitCustomConfig config = ConfigLoader.loadConfigFromFile(new BukkitCustomConfig(configFile), configFile, true);
+	private static BukkitCustomConfig arenaConfig = ConfigLoader.loadConfigFromFile(new BukkitCustomConfig(arenasFile), arenasFile, true);
+	private static FileCustomConfig messages;
+	
 	public static List<Arena> arenas = new ArrayList<>();
 	public static List<ArenaLayout> arenaLayouts = new ArrayList<>();
 	
 	public static String prefix, inventoryPrefix;
 	
-//	public static String signLayout0 = "§8[§6Crazy§5Maze§8]";
-//	public static String signLayout1 = "%name% §8(%size%x)";
-//	public static String signLayout1_2 = "§aFinish";
-//	public static String signLayout2p = "§5P §8[§7%pl%/%npl%/%mpl%§8]";
-//	public static String signLayout2np = "§aV §8[§7%pl%/%npl%/%mpl%§8]";
-//	public static String signLayout3w = "§7Waiting...";
-//	public static String signLayout3i = "§aRunning";
-//	public static String signLayout3r = "§cRestarting...";
 	public static World cmWorld;
 	
 	public static int
 		countdownMinPlayers,
 		countdownMaxPlayers,
-		wallTime;
+		wallTime,
+		tasksPerTick;
 		
 	public static double
-		genSpeed,
 		fieldChance,
 		dropInterval;
 	
@@ -66,9 +60,9 @@ public class Config {
 	
 	public static boolean 
 		hideTablist,
-		enable_update_check,
-		update_check_on_join,
-		update_check_on_command;
+		enableUpdateCheck,
+		updateCheckOnJoin,
+		updateCheckOnCommand;
 	
 	public static ItemStack
 		gameOptions = ItemUtils.createItem(Material.PAPER, 1, 0, "§7Choose your game options"),
@@ -100,7 +94,6 @@ public class Config {
 		return ItemUtils.compareItems(it, other).matches(ComparisonParameter.ALL_APPLICABLE);
 	}
 	
-	@SuppressWarnings("deprecation")
 	public static void init(){
 		Powerup.PASS_WALL.item = ItemUtils.createItem(VersionedMaterial.LIME_DYE, 1, "§aPass through wall", "§7Use this item to pass through a wall", "§7of your choice");
 		Powerup.CREATE_BARRIER.item = ItemUtils.createItem(VersionedMaterial.RED_DYE, 1, "§cCreate Barrier", "§7Use this item to create a temporary barrier to slow", "§7down your enemies");
@@ -111,18 +104,18 @@ public class Config {
 		PowerupField.SLOW_BLOCK.materialWithData = new MaterialWithData(VersionedMaterial.ORANGE_STAINED_CLAY);
 		PowerupField.RANDOM_TELEPORT.materialWithData = new MaterialWithData(VersionedMaterial.PURPLE_STAINED_CLAY);
 		
-		enable_update_check = config.getBoolean("update-check.enable", true, true);
-		update_check_on_join = config.getBoolean("update-check.on-join", true, true);
-		update_check_on_command = config.getBoolean("update-check.on-command", true, true);
+		enableUpdateCheck = config.getBoolean("update-check.enable", true, true);
+		updateCheckOnJoin = config.getBoolean("update-check.on-join", true, true);
+		updateCheckOnCommand = config.getBoolean("update-check.on-command", true, true);
 		
 		prefix = config.getString("prefix", "§8[§6Crazy§5Maze§8]", true);
 		config.setComment("inventory-prefix", "Remember that the inventory prefix shouldn't be too long as inventory names cannot be longer than 32 characters (including color codes)");
 		inventoryPrefix = config.getString("inventory-prefix", "§8[§6C§5M§8]", true);
 		countdownMinPlayers = config.getInt("countdown.min-players", 60, true);
 		countdownMaxPlayers = config.getInt("countdown.max-players", 10, true);
-		config.setComment("generation.speed", "Higher = Faster. Default: 1.0\n"
+		config.setComment("generation.tasks-per-tick", "Higher = Faster. Default: 20\n"
 											+ "Note that increasing this value might result in server lags for bigger maps");
-		genSpeed = config.getDouble("generation.speed", 1D, true);
+		tasksPerTick = config.getInt("generation.tasks-per-tick", 20, true);
 		fieldChance = config.getDouble("generation.field-chance-percent", 1.5D, true)/100D;
 		config.setComment("drop-interval", "The drop interval in which powerups should be dropped. (Higher = Slower)\n"
 										 + "The final interval will be calculated as dropInterval/numFields. This way, the drops per time per area will stay approximately constant\n"
@@ -157,27 +150,29 @@ public class Config {
 		String wName = config.getString("world", "CrazyMaze", true);
 		cmWorld = Bukkit.getWorld(wName);
 		if(cmWorld == null) {
-			CrazyMaze.pl.getLogger().info("Generating world \""+wName+"\"...");
+			CrazyMaze.plugin.getLogger().info("Generating world \"" + wName + "\"...");
+			
 			cmWorld = Bukkit.createWorld(new WorldCreator(wName).generator(new CrazyMazeWorldGenerator()));
-			cmWorld.setGameRuleValue("doMobSpawning", "false");
-			cmWorld.setGameRuleValue("doDaylightCycle", "false");
+			cmWorld.setGameRule(GameRule.RANDOM_TICK_SPEED, 0);
+			cmWorld.setGameRule(GameRule.DO_MOB_SPAWNING, false);
+			cmWorld.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
 			cmWorld.setTime(6000);
 		}
 		
 		getLayouts().stream().forEach(name -> arenaLayouts.add(loadLayout(name)));
 		getArenas().stream().forEach(name -> arenas.add(loadArena(name)));
-		CrazyMaze.pl.getLogger().info("Loaded "+arenas.size()+" arena(s)");
+		CrazyMaze.plugin.getLogger().info("Loaded "+arenas.size()+" arena(s)");
 		
 		importLangFile("de");
 		
-		messages = getMessageConfig(new File(CrazyMaze.pl.getDataFolder(), "lang/"+config.getString("language", "en", true)+".yml"));
+		messages = getMessageConfig(new File(CrazyMaze.plugin.getDataFolder(), "lang/" + config.getString("language", "en", true)+".yml"));
 		
 		saveConfig();
 	}
 	
 	private static void importLangFile(String lang) {
-		if(!new File(CrazyMaze.pl.getDataFolder(), "/lang/"+lang+".yml").exists()) {
-			CrazyMaze.pl.saveResource("lang/"+lang+".yml", false);
+		if(!new File(CrazyMaze.plugin.getDataFolder(), "/lang/"+lang+".yml").exists()) {
+			CrazyMaze.plugin.saveResource("lang/"+lang+".yml", false);
 		}
 	}
 
@@ -296,7 +291,7 @@ public class Config {
 			}
 			return ChatColor.translateAlternateColorCodes('&', msg.replace("%prefix%", config.getString("prefix")));
 		}catch(NullPointerException e) {
-			CrazyMaze.pl.getLogger().info("Message "+path+" in file "+file+" is missing");
+			CrazyMaze.plugin.getLogger().info("Message "+path+" in file "+file+" is missing");
 			return "§cMessage missing ("+path+")";
 		}
 	}
