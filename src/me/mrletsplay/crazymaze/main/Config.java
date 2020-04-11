@@ -32,7 +32,7 @@ public class Config {
 	private static File configFile = new File(CrazyMaze.plugin.getDataFolder(), "config.yml");
 	private static File arenasFile = new File(CrazyMaze.plugin.getDataFolder(), "arenas.yml");
 	
-	private static BukkitCustomConfig config = ConfigLoader.loadConfigFromFile(new BukkitCustomConfig(configFile), configFile, true);
+	public static BukkitCustomConfig config = ConfigLoader.loadConfigFromFile(new BukkitCustomConfig(configFile), configFile, true);
 	private static BukkitCustomConfig arenaConfig = ConfigLoader.loadConfigFromFile(new BukkitCustomConfig(arenasFile), arenasFile, true);
 	private static FileCustomConfig messages;
 	
