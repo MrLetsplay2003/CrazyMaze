@@ -24,7 +24,11 @@ public class BuildTask {
 	}
 	
 	public void addSubTasks(List<Runnable> subTasks) {
-		subTasks.addAll(subTasks);
+		this.subTasks.addAll(subTasks);
+	}
+	
+	public void addSubTask(Runnable subTask) {
+		this.subTasks.add(subTask);
 	}
 	
 	public void execute(int tasksPerTick, Runnable thenRun) {

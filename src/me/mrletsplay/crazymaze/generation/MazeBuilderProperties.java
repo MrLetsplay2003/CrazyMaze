@@ -4,7 +4,7 @@ import me.mrletsplay.crazymaze.main.MaterialWithData;
 import me.mrletsplay.crazymaze.maze.MazeCell;
 
 public class MazeBuilderProperties {
-	
+
 	private int
 		fieldSize,
 		wallWidth,

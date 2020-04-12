@@ -16,6 +16,7 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.weather.WeatherChangeEvent;
 
 import me.mrletsplay.crazymaze.arena.Arena;
 import me.mrletsplay.crazymaze.game.Game;
@@ -41,8 +42,15 @@ public class Events implements Listener{
 						.replace("%winner%", winner.getName())
 						.replace("%winneruuid%", winner.getUniqueId().toString()));
 			}else {
-				Game g = Games.getSign(s.getLocation());
-				if(g != null) {
+				Arena a = Games.getArenaSign(s.getLocation());
+				if(a != null) {
+					if(!a.isReady()) {
+						e.getPlayer().sendMessage(Config.getMessage(Message.OTHER_GAME_RESTARTING));
+						return;
+					}
+					
+					Game g = Games.getGameSign(s.getLocation());
+					
 					if(game != null) {
 						e.getPlayer().sendMessage(Config.getMessage(Message.OTHER_ALREADY_INGAME));
 						return;
@@ -219,6 +227,13 @@ public class Events implements Listener{
 			a.addSignLocation(e.getBlock().getLocation());
 			a.updateSign();
 			Config.saveArena(a);
+		}
+	}
+	
+	@EventHandler
+	public void onWeatherChange(WeatherChangeEvent event) {
+		if(event.getWorld().equals(Config.cmWorld)) {
+			event.setCancelled(true);
 		}
 	}
 	

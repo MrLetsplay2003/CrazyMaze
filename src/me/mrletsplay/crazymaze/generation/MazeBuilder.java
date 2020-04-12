@@ -116,26 +116,29 @@ public class MazeBuilder {
 		}
 	}
 	
-	public static BuildTask resetMaze(Location location, Maze3D maze, MazeBuilderProperties properties) {
+	public static BuildTask resetMaze(Location location, int mazeLayers, int mazeSizeX, int mazeSizeY, int cellSize, int wallHeight) {
 		List<Runnable> tasks = new ArrayList<>();
 		
-		int cellSize = properties.getFieldSize() + properties.getWallWidth();
-		
-		for(int lI = maze.getNumLayers() - 1; lI >= 0; lI--) {
-			for(int x = 0; x < maze.getSizeX(); x++) {
-				for(int y = 0; y < maze.getSizeY(); y++) {
+		for(int lI = mazeLayers - 1; lI >= 0; lI--) {
+			for(int x = 0; x < mazeSizeX; x++) {
+				for(int y = 0; y < mazeSizeY; y++) {
 					final int fLI = lI, fX = x, fY = y;
-					tasks.add(() -> fill(location.getWorld(), location.getBlockX() + fX * cellSize, location.getBlockY() + fLI * (properties.getWallHeight() + 1), location.getBlockZ() + fY * cellSize, cellSize + 1, properties.getWallHeight() + 1, cellSize + 1, new MaterialWithData(Material.AIR)));
+					tasks.add(() -> fill(location.getWorld(), location.getBlockX() + fX * cellSize, location.getBlockY() + fLI * (wallHeight + 1), location.getBlockZ() + fY * cellSize, cellSize + 1, wallHeight + 1, cellSize + 1, new MaterialWithData(Material.AIR)));
 				}
 			}
 		}
 		
 		tasks.add(() -> Bukkit.getScheduler().runTask(CrazyMaze.plugin, () -> {
-			Config.cmWorld.getNearbyEntities(location, cellSize * maze.getSizeX(), properties.getWallHeight() + 1, cellSize * maze.getSizeY())
+			Config.cmWorld.getNearbyEntities(location, cellSize * mazeSizeX, mazeLayers * (wallHeight + 1), cellSize * mazeSizeY)
 				.forEach(Entity::remove);
 		}));
 		
 		return new BuildTask(tasks);
+	}
+
+	
+	public static BuildTask resetMaze(Location location, Maze3D maze, MazeBuilderProperties properties) {
+		return resetMaze(location, maze.getNumLayers(), maze.getSizeX(), maze.getSizeY(), properties.getFieldSize() + properties.getWallWidth(), properties.getWallHeight());
 	}
 
 }

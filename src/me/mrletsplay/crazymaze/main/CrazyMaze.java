@@ -65,19 +65,6 @@ public class CrazyMaze extends JavaPlugin {
 			}
 		}
 		
-//		Metrics m = new Metrics(this);
-//		m.addCustomChart(new Metrics.AdvancedPie("maze_size") {
-//			
-//			@Override
-//			public HashMap<String, Integer> getValues(HashMap<String, Integer> valueMap) {
-//				HashMap<String, Integer> vals = new HashMap<>();
-//				for(Arena a : Config.arenas) {
-//					vals.put(String.valueOf(a.getSize()), vals.getOrDefault(String.valueOf(a.getSize()), 0)+1);
-//				}
-//				return vals;
-//			}
-//		});
-		
 		getLogger().info("Enabled");
 	}
 	
@@ -91,7 +78,7 @@ public class CrazyMaze extends JavaPlugin {
 	}
 	
 	public static void sendCommandHelp(CommandSender s) {
-		s.sendMessage(Config.prefix+" §cHelp");
+		s.sendMessage(Config.prefix + " §cHelp");
 		if(s.hasPermission(Config.PERM_ADMIN)) {
 			s.sendMessage("§7§lArena creation:");
 			s.sendMessage("§7/cm create <Name> [copy] §8- Create an arena");

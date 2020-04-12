@@ -4,13 +4,16 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 
 import me.mrletsplay.crazymaze.game.Game;
 import me.mrletsplay.crazymaze.game.Games;
+import me.mrletsplay.crazymaze.generation.BuildTask;
 import me.mrletsplay.crazymaze.main.Config;
+import me.mrletsplay.crazymaze.main.CrazyMaze;
 import me.mrletsplay.crazymaze.main.Message;
 
 public class Arena {
@@ -22,6 +25,7 @@ public class Arena {
 	private boolean enablePowerups;
 	private String onWin;
 	private List<ArenaLayout> layouts;
+	private boolean isReady;
 	
 	public Arena(String name) {
 		this.name = name;
@@ -40,6 +44,17 @@ public class Arena {
 		this.onWin = onWin;
 		this.enablePowerups = powerups;
 		this.layouts = layouts;
+		
+		Bukkit.getScheduler().runTaskAsynchronously(CrazyMaze.plugin, () -> {
+			System.out.println("HELLO WORLD");
+			BuildTask task = Config.resetArenaToBeReset(this);
+			System.out.println(task);
+			if(task != null) {
+				task.execute(Config.tasksPerTick, () -> isReady = true);
+			}else {
+				isReady = true;
+			}
+		});
 	}
 	
 	public Arena(String name, Location gameLobby, Location mainLobby, int maxPlayers, int size, String onWin, int minPlayers, boolean powerups, List<ArenaLayout> layouts) {
@@ -142,13 +157,11 @@ public class Arena {
 		return layouts;
 	}
 	
+	public boolean isReady() {
+		return isReady;
+	}
+	
 	public void updateSign() {
-//		Game g;
-//		if((g = Games.getGame(this)) != null) {
-//			g.updSign();
-//			return;
-//		}
-		
 		Iterator<Location> lIt = signLocations.iterator();
 		while(lIt.hasNext()) {
 			Location loc = lIt.next();
@@ -166,7 +179,11 @@ public class Arena {
 			s.setLine(2, Config.getMessage(powerupsEnabled() ? Message.SIGN_JOIN_LINE_3_POWERUPS : Message.SIGN_JOIN_LINE_3_NO_POWERUPS, "players", g == null ? "0" : "" + g.getPlayers().size(), "min-players", "" + getMaxPlayers(), "max-players", "" + getMinPlayers()));
 			
 			if(g == null) {
-				s.setLine(3, Config.getMessage(Message.SIGN_JOIN_LINE_4_WAITING));
+				if(isReady) {
+					s.setLine(3, Config.getMessage(Message.SIGN_JOIN_LINE_4_WAITING));
+				}else {
+					s.setLine(3, Config.getMessage(Message.SIGN_JOIN_LINE_4_RESTARTING));
+				}
 				s.update();
 			}else {
 				String sl3 = "§c???";

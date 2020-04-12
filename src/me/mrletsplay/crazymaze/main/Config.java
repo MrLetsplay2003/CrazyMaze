@@ -17,6 +17,9 @@ import org.bukkit.inventory.ItemStack;
 import me.mrletsplay.crazymaze.arena.Arena;
 import me.mrletsplay.crazymaze.arena.ArenaLayout;
 import me.mrletsplay.crazymaze.game.Games;
+import me.mrletsplay.crazymaze.generation.BuildTask;
+import me.mrletsplay.crazymaze.generation.BuiltArena;
+import me.mrletsplay.crazymaze.generation.MazeBuilder;
 import me.mrletsplay.mrcore.bukkitimpl.ItemUtils;
 import me.mrletsplay.mrcore.bukkitimpl.ItemUtils.ComparisonParameter;
 import me.mrletsplay.mrcore.bukkitimpl.config.BukkitCustomConfig;
@@ -125,8 +128,8 @@ public class Config {
 		config.setComment("hide-tablist", "When this option is enabled, players that are not in the same game as you will be hidden from the tablist");
 		hideTablist = config.getBoolean("hide-tablist", true, true);
 		
-		votingInvName = inventoryPrefix+" §8Game Options";
-		choiceInvName = inventoryPrefix+" §8Vote";
+		votingInvName = inventoryPrefix + " §8Game Options";
+		choiceInvName = inventoryPrefix + " §8Vote";
 		
 		config.setComment("powerups.wall-time", "The time it takes before a wall placed by the \"Barrier\" powerup disappears");
 		wallTime = config.getInt("powerups.wall-time", 3, true);
@@ -138,10 +141,10 @@ public class Config {
 			Tools.setMaterial(config, "layout.default.icon", new MaterialWithData(Material.BRICKS));
 			config.set("layout.default.display-name", "§6Default");
 			
-			Tools.setMaterial(config, "layout.birch-forest.walls", new MaterialWithData(VersionedMaterial.OAK_LEAVES));
-			Tools.setMaterial(config, "layout.birch-forest.floor", new MaterialWithData(VersionedMaterial.OAK_PLANKS));
-			Tools.setMaterial(config, "layout.birch-forest.between", new MaterialWithData(VersionedMaterial.OAK_LOG));
-			Tools.setMaterial(config, "layout.birch-forest.icon", new MaterialWithData(VersionedMaterial.OAK_LOG));
+			Tools.setMaterial(config, "layout.birch-forest.walls", new MaterialWithData(VersionedMaterial.BIRCH_LEAVES));
+			Tools.setMaterial(config, "layout.birch-forest.floor", new MaterialWithData(VersionedMaterial.BIRCH_PLANKS));
+			Tools.setMaterial(config, "layout.birch-forest.between", new MaterialWithData(VersionedMaterial.BIRCH_LOG));
+			Tools.setMaterial(config, "layout.birch-forest.icon", new MaterialWithData(VersionedMaterial.BIRCH_LOG));
 			config.set("layout.birch-forest.display-name", "§aBirch Forest");
 		}
 		
@@ -273,13 +276,40 @@ public class Config {
 	}
 	
 	public static ArenaLayout loadLayout(String name) {
-		MaterialWithData walls = Tools.loadMaterial(config, "layout."+name+".walls");
-		MaterialWithData floor = Tools.loadMaterial(config, "layout."+name+".floor");
-		MaterialWithData between = Tools.loadMaterial(config, "layout."+name+".between");
-		MaterialWithData icon = Tools.loadMaterial(config, "layout."+name+".icon");
-		String displayName = config.getString("layout."+name+".display-name");
+		MaterialWithData walls = Tools.loadMaterial(config, "layout." + name + ".walls");
+		MaterialWithData floor = Tools.loadMaterial(config, "layout." + name + ".floor");
+		MaterialWithData between = Tools.loadMaterial(config, "layout." + name + ".between");
+		MaterialWithData icon = Tools.loadMaterial(config, "layout." + name + ".icon");
+		String displayName = config.getString("layout." + name + ".display-name");
 		return new ArenaLayout(name, displayName, icon, walls, floor, between);
 	}
+	
+	public static void saveArenaToBeReset(Arena a, BuiltArena built) {
+		arenaConfig.set("to-be-reset." + a.getName() + ".location", built.getArenaLocation());
+		arenaConfig.set("to-be-reset." + a.getName() + ".layers", built.getMaze().getNumLayers());
+		arenaConfig.set("to-be-reset." + a.getName() + ".maze-size-x", built.getMaze().getSizeX());
+		arenaConfig.set("to-be-reset." + a.getName() + ".maze-size-y", built.getMaze().getSizeY());
+		arenaConfig.set("to-be-reset." + a.getName() + ".cell-size", built.getBuilderProperties().getFieldSize() + built.getBuilderProperties().getWallWidth());
+		arenaConfig.set("to-be-reset." + a.getName() + ".wall-height", built.getBuilderProperties().getWallHeight());
+		arenaConfig.saveToFile();
+	}
+	
+	public static BuildTask resetArenaToBeReset(Arena a) {
+		if(arenaConfig.getOrCreateSubsection("to-be-reset").getSubsection(a.getName()) == null) return null;
+		Location loc = arenaConfig.getLocation("to-be-reset." + a.getName() + ".location");
+		int l = arenaConfig.getInt("to-be-reset." + a.getName() + ".layers");
+		int sizeX = arenaConfig.getInt("to-be-reset." + a.getName() + ".maze-size-x");
+		int sizeY = arenaConfig.getInt("to-be-reset." + a.getName() + ".maze-size-y");
+		int cellSize = arenaConfig.getInt("to-be-reset." + a.getName() + ".cell-size");
+		int wallHeight = arenaConfig.getInt("to-be-reset." + a.getName() + ".wall-height");
+		
+		BuildTask t = MazeBuilder.resetMaze(loc, l, sizeX, sizeY, cellSize, wallHeight);
+		t.addSubTask(() -> {
+			arenaConfig.unset("to-be-reset." + a.getName());
+			arenaConfig.saveToFile();
+		});
+		return t;
+	}	
 	
 	public static String getAndTranslate(String file, String path) {
 		String msg = null;

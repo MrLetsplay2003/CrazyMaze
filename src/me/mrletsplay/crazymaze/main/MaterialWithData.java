@@ -8,6 +8,7 @@ import me.mrletsplay.mrcore.bukkitimpl.versioned.VersionedMaterial;
 public class MaterialWithData {
 
 	private Material material;
+	
 	private short data;
 	
 	public MaterialWithData(Material material, short data) {

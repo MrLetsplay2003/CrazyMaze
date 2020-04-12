@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -38,8 +40,12 @@ public class Game {
 	private ArenaLayout layout;
 	private List<Player> players;
 	private BuiltArena builtArena;
-	private HashMap<Player, VotingData> votes;
-	private double itemBuf = 0, dPS;
+	private Map<UUID, VotingData> votes;
+	
+	private double
+		itemBuf = 0,
+		dropsPerSecond;
+	
 	private List<ArenaLayout> layouts;
 	
 	public Game(Arena arena) {
@@ -48,7 +54,7 @@ public class Game {
 		this.countdown = -1;
 		this.r = new Random();
 		this.votes = new HashMap<>();
-		this.dPS = 1 / (Config.dropInterval / (double) (arena.getSize() * arena.getSize()));
+		this.dropsPerSecond = 1 / (Config.dropInterval / (double) (arena.getSize() * arena.getSize()));
 		players = new ArrayList<>();
 		if(arena.getLayouts().size() <= 3) {
 			this.layouts = new ArrayList<>(arena.getLayouts());
@@ -75,12 +81,12 @@ public class Game {
 			pl.sendMessage(Config.getMessage(Message.INGAME_PLAYER_JOINED, "player", p.getName(), "currplayers", ""+players.size(), "maxplayers", ""+arena.getMaxPlayers()));
 		}
 		if(hasEnoughPlayers()) {
-			if(countdown==-1) {
+			if(countdown == -1) {
 				countdown = 60;
 			}
 		}
 		if(players.size() == arena.getMaxPlayers()) {
-			if(countdown>10) {
+			if(countdown > 10) {
 				countdown = 10;
 			}
 		}
@@ -89,20 +95,20 @@ public class Game {
 	
 	public void tick() {
 		if(stage.equals(GameStage.WAITING)) {
-			if(countdown>0) {
+			if(countdown > 0) {
 				if(countdown % 10 == 0 || countdown <= 5) {
 					for(Player p : players) {
 						p.sendMessage(Config.getMessage(Message.INGAME_COUNTDOWN_START, "countdown", ""+countdown));
 					}
 				}
 				countdown--;
-			}else if(countdown==0) {
+			}else if(countdown == 0) {
 				countdown = -1;
 				start();
 			}
 		}else if(stage.equals(GameStage.RUNNING)){
 			if(arena.powerupsEnabled()) {
-				itemBuf += dPS;
+				itemBuf += dropsPerSecond;
 				
 				while(itemBuf > 1) {
 					ItemStack i = Powerup.values()[r.nextInt(Powerup.values().length)].item;
@@ -131,18 +137,18 @@ public class Game {
 			}
 			
 			if(gameTime > 0) {
-				if(gameTime%(60*10)==0 || (gameTime%60==0 && gameTime<=5*60)) {
+				if(gameTime % (60 * 10) == 0 || (gameTime % 60 == 0 && gameTime <= 5 * 60)) {
 					for(Player p : players) {
-						p.sendMessage(Config.getMessage(Message.INGAME_COUNTDOWN_END_MINUTES, "countdown", ""+(gameTime/60)));
+						p.sendMessage(Config.getMessage(Message.INGAME_COUNTDOWN_END_MINUTES, "countdown", "" + (gameTime / 60)));
 					}
-				}else if(gameTime < 60 && (gameTime%10==0 || gameTime <= 10)) {
+				}else if(gameTime < 60 && (gameTime % 10 == 0 || gameTime <= 10)) {
 					for(Player p : players) {
-						p.sendMessage(Config.getMessage(Message.INGAME_COUNTDOWN_END_SECONDS, "countdown", ""+gameTime));
+						p.sendMessage(Config.getMessage(Message.INGAME_COUNTDOWN_END_SECONDS, "countdown", "" + gameTime));
 					}
 				}
 				gameTime--;
-			}else if(gameTime==0) {
-				gameTime=-1;
+			}else if(gameTime == 0) {
+				gameTime = -1;
 				stop(false, Config.getMessage(Message.INGAME_END_TIE));
 			}
 		}
@@ -155,10 +161,13 @@ public class Game {
 				p.showPlayer(CrazyMaze.plugin, pl);
 			}
 		}
-		votes.remove(p);
+		
+		votes.remove(p.getUniqueId());
+		
 		for(Player pl : players) {
 			pl.sendMessage(Config.getMessage(Message.INGAME_PLAYER_LEFT, "player", p.getName(), "currplayers", ""+players.size(), "maxplayers", ""+arena.getMaxPlayers()));
 		}
+		
 		Tools.clearPlayer(p, true);
 		p.teleport(arena.getMainLobby());
 		if(stage.equals(GameStage.WAITING)) {
@@ -337,13 +346,17 @@ public class Game {
 		}
 		
 		if(stage.equals(GameStage.RUNNING) || stage.equals(GameStage.GENERATING) || (force && !stage.equals(GameStage.WAITING))) {
-			stage = GameStage.RESETTING;
-			if(builtArena != null) builtArena.getBuildTask().cancel();
-			Bukkit.getScheduler().runTaskAsynchronously(CrazyMaze.plugin, () -> MazeBuilder.resetMaze(builtArena.getArenaLocation(), builtArena.getMaze(), builtArena.getBuilderProperties()).execute(Config.tasksPerTick, () -> {
-				Games.games.remove(this.arena);
-				stage = GameStage.WAITING;
-				arena.updateSign();
-			}));
+			if(!force) {
+				stage = GameStage.RESETTING;
+				if(builtArena != null) builtArena.getBuildTask().cancel();
+				Bukkit.getScheduler().runTaskAsynchronously(CrazyMaze.plugin, () -> MazeBuilder.resetMaze(builtArena.getArenaLocation(), builtArena.getMaze(), builtArena.getBuilderProperties()).execute(Config.tasksPerTick, () -> {
+					Games.games.remove(this.arena);
+					stage = GameStage.WAITING;
+					arena.updateSign();
+				}));
+			}else {
+				Config.saveArenaToBeReset(arena, builtArena);
+			}
 		}else{
 			Games.games.remove(this.arena);
 		}
@@ -381,13 +394,13 @@ public class Game {
 	}
 	
 	public VotingData getVotingData(Player p) {
-		VotingData d = votes.get(p);
-		if(d==null) d = new VotingData(p);
+		VotingData d = votes.get(p.getUniqueId());
+		if(d == null) d = new VotingData(p);
 		return d;
 	}
 	
 	public void setVotingData(Player p, VotingData d) {
-		votes.put(p, d);
+		votes.put(p.getUniqueId(), d);
 	}
 	
 	public static class VotingData{
