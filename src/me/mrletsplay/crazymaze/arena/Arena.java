@@ -31,6 +31,7 @@ public class Arena {
 		this.name = name;
 		this.mainLobby = Config.config.getLocation("settings.defaultmainlobby");
 		this.signLocations = new ArrayList<>();
+		this.isReady = true;
 	}
 	
 	public Arena(String name, Location gameLobby, Location mainLobby, List<Location> signLocations, int maxPlayers, int size, String onWin, int minPlayers, boolean powerups, List<ArenaLayout> layouts) {
