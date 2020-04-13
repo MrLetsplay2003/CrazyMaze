@@ -45,7 +45,7 @@ public class MazeBuilder {
 		
 		World w = location.getWorld();
 		
-		int cellSize = properties.getFieldSize() + properties.getWallWidth();
+		int cellSize = properties.getCellSize();
 		
 		for(int x = 0; x < layer.getSizeX(); x++) {
 			for(int y = 0; y < layer.getSizeY(); y++) {
@@ -60,20 +60,8 @@ public class MazeBuilder {
 					
 					fill(w, location.getBlockX() + fX * cellSize, location.getBlockY(), location.getBlockZ() + fY * cellSize, cellSize, 1, cellSize, field);
 					
-					if(c.hasWall(MazeDirection.UP)) {
-						fill(w, location.getBlockX() + fX * cellSize, location.getBlockY() + 1, location.getBlockZ() + fY * cellSize, cellSize + 1, properties.getWallHeight(), 1, properties.getWallMaterial());
-					}
-					
-					if(c.hasWall(MazeDirection.DOWN)) {
-						fill(w, location.getBlockX() + fX * cellSize, location.getBlockY() + 1, location.getBlockZ() + fY * cellSize + cellSize, cellSize + 1, properties.getWallHeight(), 1, properties.getWallMaterial());
-					}
-					
-					if(c.hasWall(MazeDirection.LEFT)) {
-						fill(w, location.getBlockX() + fX * cellSize, location.getBlockY() + 1, location.getBlockZ() + fY * cellSize, 1, properties.getWallHeight(), cellSize + 1, properties.getWallMaterial());
-					}
-					
-					if(c.hasWall(MazeDirection.RIGHT)) {
-						fill(w, location.getBlockX() + fX * cellSize + cellSize, location.getBlockY() + 1, location.getBlockZ() + fY * cellSize, 1, properties.getWallHeight(), cellSize + 1, properties.getWallMaterial());
+					for(MazeDirection dir : c.getWalls()) {
+						buildWall(Tools.getCellLocation(location, properties, c), dir, cellSize, properties.getWallHeight(), properties.getWallMaterial()).run();
 					}
 				});
 			}
@@ -104,6 +92,34 @@ public class MazeBuilder {
 		});
 		
 		return new BuildTask(tasks);
+	}
+	
+	public static Runnable buildWall(Location cellLocation, MazeDirection direction, int cellSize, int wallHeight, MaterialWithData wallMaterial) {
+		switch(direction) {
+			case UP:
+				return () -> fill(cellLocation.getWorld(), cellLocation.getBlockX(), cellLocation.getBlockY() + 1, cellLocation.getBlockZ(), cellSize + 1, wallHeight, 1, wallMaterial);
+			case DOWN:
+				return () -> fill(cellLocation.getWorld(), cellLocation.getBlockX(), cellLocation.getBlockY() + 1, cellLocation.getBlockZ() + cellSize, cellSize + 1, wallHeight, 1, wallMaterial);
+			case LEFT:
+				return () -> fill(cellLocation.getWorld(), cellLocation.getBlockX(), cellLocation.getBlockY() + 1, cellLocation.getBlockZ(), 1, wallHeight, cellSize + 1, wallMaterial);
+			case RIGHT:
+				return () -> fill(cellLocation.getWorld(), cellLocation.getBlockX() + cellSize, cellLocation.getBlockY() + 1, cellLocation.getBlockZ(), 1, wallHeight, cellSize + 1, wallMaterial);
+		}
+		throw new IllegalArgumentException("Invalid direction");
+	}
+	
+	public static Runnable buildInnerWall(Location cellLocation, MazeDirection direction, int fieldSize, int wallWidth, int wallHeight, MaterialWithData wallMaterial) {
+		switch(direction) {
+			case UP:
+				return () -> fill(cellLocation.getWorld(), cellLocation.getBlockX() + 1, cellLocation.getBlockY() + 1, cellLocation.getBlockZ(), fieldSize, wallHeight, 1, wallMaterial);
+			case DOWN:
+				return () -> fill(cellLocation.getWorld(), cellLocation.getBlockX() + 1, cellLocation.getBlockY() + 1, cellLocation.getBlockZ() + fieldSize + wallWidth, fieldSize, wallHeight, 1, wallMaterial);
+			case LEFT:
+				return () -> fill(cellLocation.getWorld(), cellLocation.getBlockX(), cellLocation.getBlockY() + 1, cellLocation.getBlockZ() + 1, 1, wallHeight, fieldSize, wallMaterial);
+			case RIGHT:
+				return () -> fill(cellLocation.getWorld(), cellLocation.getBlockX() + fieldSize + wallWidth, cellLocation.getBlockY() + 1, cellLocation.getBlockZ() + 1, 1, wallHeight, fieldSize, wallMaterial);
+		}
+		throw new IllegalArgumentException("Invalid direction");
 	}
 	
 	private static void fill(World world, int x, int y, int z, int w, int h, int d, MaterialWithData type) {

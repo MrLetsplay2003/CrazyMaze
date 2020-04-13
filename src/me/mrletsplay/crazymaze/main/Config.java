@@ -100,8 +100,9 @@ public class Config {
 	public static void init(){
 		Powerup.PASS_WALL.item = ItemUtils.createItem(VersionedMaterial.LIME_DYE, 1, "§aPass through wall", "§7Use this item to pass through a wall", "§7of your choice");
 		Powerup.CREATE_BARRIER.item = ItemUtils.createItem(VersionedMaterial.RED_DYE, 1, "§cCreate Barrier", "§7Use this item to create a temporary barrier to slow", "§7down your enemies");
-		Powerup.PROTECT.item = ItemUtils.createItem(Material.GOLDEN_APPLE,  1,  1, "§6Protect me", "§7Use this item to bounce back other player");
-		Powerup.TOPDOWN_VIEW.item = ItemUtils.createItem(Material.CHAINMAIL_BOOTS, 1, 1, "§bTopdown view", "§7Use this item to take a little look from above the maze");
+		Powerup.PROTECT.item = ItemUtils.createItem(Material.GOLDEN_APPLE,  1,  0, "§6Protect me", "§7Use this item to bounce back other players");
+		Powerup.TOPDOWN_VIEW.item = ItemUtils.createItem(Material.CHAINMAIL_BOOTS, 1, 0, "§bTopdown view", "§7Use this item to take a little look from above the maze");
+		Powerup.HIGHLIGHT_PLAYERS.item = ItemUtils.createItem(Material.GLOWSTONE, 1, 0, "§eHighlight players", "§7Use this item to temporarily highlight", "§7all other players");
 		
 		PowerupField.SPEED.materialWithData = new MaterialWithData(VersionedMaterial.LIGHT_BLUE_STAINED_CLAY);
 		PowerupField.SLOW_BLOCK.materialWithData = new MaterialWithData(VersionedMaterial.ORANGE_STAINED_CLAY);
@@ -289,7 +290,7 @@ public class Config {
 		arenaConfig.set("to-be-reset." + a.getName() + ".layers", built.getMaze().getNumLayers());
 		arenaConfig.set("to-be-reset." + a.getName() + ".maze-size-x", built.getMaze().getSizeX());
 		arenaConfig.set("to-be-reset." + a.getName() + ".maze-size-y", built.getMaze().getSizeY());
-		arenaConfig.set("to-be-reset." + a.getName() + ".cell-size", built.getBuilderProperties().getFieldSize() + built.getBuilderProperties().getWallWidth());
+		arenaConfig.set("to-be-reset." + a.getName() + ".cell-size", built.getBuilderProperties().getCellSize());
 		arenaConfig.set("to-be-reset." + a.getName() + ".wall-height", built.getBuilderProperties().getWallHeight());
 		arenaConfig.saveToFile();
 	}

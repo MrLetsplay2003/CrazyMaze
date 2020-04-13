@@ -24,6 +24,7 @@ import me.mrletsplay.crazymaze.game.Games;
 import me.mrletsplay.crazymaze.generation.BuiltArena;
 import me.mrletsplay.crazymaze.generation.MazeBuilderProperties;
 import me.mrletsplay.crazymaze.maze.MazeCell;
+import me.mrletsplay.crazymaze.maze.MazeDirection;
 import me.mrletsplay.mrcore.config.CustomConfig;
 
 public class Tools {
@@ -152,19 +153,19 @@ public class Tools {
 	public static MazeCell getCell(Game g, Location l) {
 		BuiltArena a = g.getBuiltArena();
 		MazeBuilderProperties props = a.getBuilderProperties();
-		int fieldSize = props.getFieldSize() + props.getWallWidth();
+		int cellSize = props.getCellSize();
 
 		int h = (l.getBlockY() - a.getArenaLocation().getBlockY()) / (props.getWallHeight() + 1);
-		int x = (l.getBlockX() - a.getArenaLocation().getBlockX()) / fieldSize;
-		int y = (l.getBlockZ() - a.getArenaLocation().getBlockZ()) / fieldSize;
+		int x = (l.getBlockX() - a.getArenaLocation().getBlockX()) / cellSize;
+		int y = (l.getBlockZ() - a.getArenaLocation().getBlockZ()) / cellSize;
 		
 		if(h < 0 || x < 0 || y < 0 || h >= a.getMaze().getNumLayers() || x >= a.getMaze().getSizeX() || y >= a.getMaze().getSizeY()) return null;
 		return a.getMaze().getLayer(h).getCell(x, y);
 	}
 	
 	public static Location getCellLocation(Location arenaLocation,  MazeBuilderProperties builderProperties, MazeCell cell) {
-		int fieldSize = builderProperties.getFieldSize() + builderProperties.getWallWidth();
-		return arenaLocation.clone().add(new Vector(cell.getX() * fieldSize, 0, cell.getY() * fieldSize));
+		int cellSize = builderProperties.getCellSize();
+		return arenaLocation.clone().add(new Vector(cell.getX() * cellSize, 0, cell.getY() * cellSize));
 	}
 	
 	public static Location getCellLocation(Game g, MazeCell cell) {
@@ -179,45 +180,14 @@ public class Tools {
 		return getCellLocation(g, cell).add(new Vector(props.getFieldSize() / 2d + 1, 1, props.getFieldSize() / 2d + 1));
 	}
 	
-	public static AbsoluteDirection get(Vector dir) {
+	public static MazeDirection get(Vector dir) {
 		dir = dir.normalize();
 		double xDiff = dir.getX(), aXD = Math.abs(xDiff);
 		double zDiff = dir.getZ(), aZD = Math.abs(zDiff);
 		if(aXD > aZD) {
-			return xDiff>0?AbsoluteDirection.X_POS:AbsoluteDirection.X_NEG;
+			return xDiff > 0 ? MazeDirection.RIGHT : MazeDirection.LEFT;
 		}else /*if(aZD > aXD && aZD > aYD)*/ {
-			return zDiff>0?AbsoluteDirection.Z_POS:AbsoluteDirection.Z_NEG;
-		}
-	}
-	
-	public static Vector add(Vector l, AbsoluteDirection dir, int blocks) {
-		switch(dir) {
-			case X_POS:
-				return l.clone().add(new Vector(blocks,0,0));
-			case X_NEG:
-				return l.clone().add(new Vector(-blocks,0,0));
-			case Z_POS:
-				return l.clone().add(new Vector(0,0,blocks));
-			case Z_NEG:
-				return l.clone().add(new Vector(0,0,-blocks));
-		}
-		return null;
-	}
-	
-	public static enum AbsoluteDirection {
-		X_POS("X_NEG"),
-		X_NEG("X_POS"),
-		Z_POS("Z_NEG"),
-		Z_NEG("Z_POS");
-		
-		private String inverse;
-		
-		private AbsoluteDirection(String inverse) {
-			this.inverse = inverse;
-		}
-		
-		public AbsoluteDirection inverse() {
-			return valueOf(inverse);
+			return zDiff > 0 ? MazeDirection.DOWN : MazeDirection.UP;
 		}
 	}
 	

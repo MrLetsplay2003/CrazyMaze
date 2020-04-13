@@ -3,7 +3,7 @@ author: MrLetsplay
 name: CrazyMaze
 version: 2.0
 api-version: 1.13
-softdepend: [MrCore_BukkitImpl]
+softdepend: [MrCore_BukkitImpl, Multiverse-Core]
 
 commands:
      crazymaze:

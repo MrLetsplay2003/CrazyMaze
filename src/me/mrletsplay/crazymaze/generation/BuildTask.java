@@ -23,6 +23,10 @@ public class BuildTask {
 		return subTasks;
 	}
 	
+	public void addSubTask(BuildTask task) {
+		this.subTasks.addAll(task.getSubTasks());
+	}
+	
 	public void addSubTasks(List<Runnable> subTasks) {
 		this.subTasks.addAll(subTasks);
 	}
@@ -31,11 +35,11 @@ public class BuildTask {
 		this.subTasks.add(subTask);
 	}
 	
-	public void execute(int tasksPerTick, Runnable thenRun) {
+	public void execute(int offsetTicks, int tasksPerTick, Runnable thenRun) {
 		subTasks.add(thenRun);
 		
 		List<BukkitTask> finalTasks = new ArrayList<>();
-		long curr = 0, t = 0;
+		long curr = offsetTicks, t = 0;
 		for(Runnable run : subTasks) {
 			finalTasks.add(Bukkit.getScheduler().runTaskLater(CrazyMaze.plugin, run, curr));
 			t = (t + 1) % tasksPerTick;
@@ -44,6 +48,10 @@ public class BuildTask {
 		tasks.addAll(finalTasks);
 		
 		expectedTimeTicks = curr;
+	}
+	
+	public void execute(int tasksPerTick, Runnable thenRun) {
+		execute(0, tasksPerTick, thenRun);
 	}
 	
 	public long getExpectedTimeTicks() {

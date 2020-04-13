@@ -1,6 +1,8 @@
 package me.mrletsplay.crazymaze.main;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -17,11 +19,17 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
+import org.bukkit.inventory.EquipmentSlot;
 
 import me.mrletsplay.crazymaze.arena.Arena;
 import me.mrletsplay.crazymaze.game.Game;
 import me.mrletsplay.crazymaze.game.GameStage;
 import me.mrletsplay.crazymaze.game.Games;
+import me.mrletsplay.crazymaze.generation.MazeBuilder;
+import me.mrletsplay.crazymaze.generation.MazeBuilderProperties;
+import me.mrletsplay.crazymaze.maze.MazeCell;
+import me.mrletsplay.crazymaze.maze.MazeDirection;
+import me.mrletsplay.mrcore.bukkitimpl.versioned.VersionedMaterial;
 
 public class Events implements Listener{
 
@@ -78,23 +86,28 @@ public class Events implements Listener{
 			if(Games.isInGame(e.getPlayer())) {
 				Game g = Games.getGame(e.getPlayer());
 				Player p = e.getPlayer();
-				/*if(g.getStage().equals(GameStage.RUNNING)) {
+				if(g.getStage().equals(GameStage.RUNNING)) {
+					e.setCancelled(true);
 					if(Config.matchesItem(e.getItem(), Powerup.PASS_WALL.item)) {
 						if(e.getAction().equals(Action.RIGHT_CLICK_BLOCK) && e.getClickedBlock().getType().equals(g.getLayout().getWalls().getMaterial())) {
-							if(p.getLocation().distance(e.getClickedBlock().getLocation())<2) {
-								Vector f = Tools.getField(p.getLocation(), g);
-								Vector f2 = Tools.add(f, Tools.get(e.getPlayer().getLocation().getDirection()), 1);
-								if(f2.getBlockX() >= 0 && f2.getBlockZ() >= 0 && f2.getBlockX() < g.getArena().getSize() && f2.getBlockZ() < g.getArena().getSize()) {
-									p.teleport(new Location(Config.cmWorld, f2.getBlockX()*g.getPanel().sc+1, Config.MAZE_Y+1, f2.getBlockZ()*g.getPanel().sc+1).setDirection(p.getLocation().getDirection()));
-									if(e.getItem().getAmount()>1) {
-										e.getItem().setAmount(e.getItem().getAmount()-1);
-									}else {
-										if(e.getHand().equals(EquipmentSlot.HAND)) {
-											p.getInventory().setItemInMainHand(null);
+							if(p.getLocation().distance(e.getClickedBlock().getLocation()) < 2) {
+								MazeCell cell = Tools.getCell(g, p.getLocation());
+								MazeCell newCell = cell.getRelative(Tools.get(e.getPlayer().getLocation().getDirection()));
+								
+								if(newCell != null) {
+									Bukkit.getScheduler().runTask(CrazyMaze.plugin, () -> {
+										p.teleport(Tools.getCellCenter(g, newCell).setDirection(p.getLocation().getDirection()));
+
+										if(e.getItem().getAmount() > 1) {
+											e.getItem().setAmount(e.getItem().getAmount()-1);
 										}else {
-											p.getInventory().setItemInOffHand(null);
+											if(e.getHand().equals(EquipmentSlot.HAND)) {
+												p.getInventory().setItemInMainHand(null);
+											}else {
+												p.getInventory().setItemInOffHand(null);
+											}
 										}
-									}
+									});
 								}else {
 									p.sendMessage(Config.getMessage(Message.INGAME_CANNOT_PASS));
 								}
@@ -102,18 +115,24 @@ public class Events implements Listener{
 						}
 					}else if(Config.matchesItem(e.getItem(), Powerup.CREATE_BARRIER.item)) {
 						if(e.getAction().equals(Action.RIGHT_CLICK_BLOCK) || e.getAction().equals(Action.RIGHT_CLICK_AIR)) {
-							Vector f = Tools.getField(p.getLocation(), g);
-							AbsoluteDirection dir = Tools.get(e.getPlayer().getLocation().getDirection()).inverse();
-							Vector f2 = Tools.add(f, dir, 1);
-							Location fLoc = new Location(Config.cmWorld, f2.getBlockX()*g.getPanel().sc, Config.MAZE_Y+1, f2.getBlockZ()*g.getPanel().sc);
-							if(f2.getBlockX()>=0 && f2.getBlockZ()>=0 && f2.getBlockX() < g.getArena().getSize() && f2.getBlockZ() < g.getArena().getSize()) {
-								g.getPanel().fill(fLoc.getBlockX(), fLoc.getBlockY(), fLoc.getBlockZ(), g.getPanel().scale, Maze3D.wallHeight, g.getPanel().scale, VersionedMaterial.WHITE_WOOL.getCurrentMaterialDefinition().getMaterial(), Config.cmWorld, 0, () ->{
-									g.buildTaskIDs.add(Bukkit.getScheduler().runTaskLater(CrazyMaze.pl, () -> {
-										g.getPanel().fill(fLoc.getBlockX(), fLoc.getBlockY(), fLoc.getBlockZ(), g.getPanel().scale, Maze3D.wallHeight, g.getPanel().scale, Material.AIR, Config.cmWorld, 0, null);
-									}, Config.wallTime*20L).getTaskId());
-									
-									if(e.getItem().getAmount()>0) {
+							MazeCell cell = Tools.getCell(g, p.getLocation());
+							MazeDirection dir = Tools.get(e.getPlayer().getLocation().getDirection()).getOpposite();
+							Location cellLocation = Tools.getCellLocation(g, cell);
+							
+							if(!cell.hasWall(dir)) {
+								Bukkit.getScheduler().runTask(CrazyMaze.plugin, () -> {
+									MazeBuilderProperties pr = g.getBuiltArena().getBuilderProperties();
+									MazeBuilder.buildInnerWall(cellLocation, dir, pr.getFieldSize(), pr.getWallWidth(), pr.getWallHeight(), new MaterialWithData(VersionedMaterial.WHITE_WOOL)).run();
+									Bukkit.getScheduler().runTaskLater(CrazyMaze.plugin, MazeBuilder.buildInnerWall(cellLocation, dir, pr.getFieldSize(), pr.getWallWidth(), pr.getWallHeight(), new MaterialWithData(Material.AIR)), Config.wallTime * 20L);
+								
+									if(e.getItem().getAmount() > 1) {
 										e.getItem().setAmount(e.getItem().getAmount()-1);
+									}else {
+										if(e.getHand().equals(EquipmentSlot.HAND)) {
+											p.getInventory().setItemInMainHand(null);
+										}else {
+											p.getInventory().setItemInOffHand(null);
+										}
 									}
 								});
 							}else {
@@ -129,7 +148,7 @@ public class Events implements Listener{
 							
 						}
 					}
-				}else */if(g.getStage().equals(GameStage.WAITING)) {
+				}else if(g.getStage().equals(GameStage.WAITING)) {
 					if(e.getAction().equals(Action.RIGHT_CLICK_BLOCK) || e.getAction().equals(Action.RIGHT_CLICK_AIR)){
 						if(dName.equals(Config.gameOptions.getItemMeta().getDisplayName())) {
 							p.openInventory(GUIs.getVotingGUI(g.getArena()).getForPlayer(p));

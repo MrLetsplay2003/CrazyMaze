@@ -47,9 +47,7 @@ public class Arena {
 		this.layouts = layouts;
 		
 		Bukkit.getScheduler().runTaskAsynchronously(CrazyMaze.plugin, () -> {
-			System.out.println("HELLO WORLD");
 			BuildTask task = Config.resetArenaToBeReset(this);
-			System.out.println(task);
 			if(task != null) {
 				task.execute(Config.tasksPerTick, () -> isReady = true);
 			}else {

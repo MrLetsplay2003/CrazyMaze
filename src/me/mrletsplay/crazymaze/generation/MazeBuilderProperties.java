@@ -43,6 +43,10 @@ public class MazeBuilderProperties {
 	public int getWallWidth() {
 		return wallWidth;
 	}
+	
+	public int getCellSize() {
+		return fieldSize + wallWidth;
+	}
 
 	public int getWallHeight() {
 		return wallHeight;

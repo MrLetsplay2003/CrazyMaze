@@ -8,8 +8,7 @@ public enum Powerup {
 	CREATE_BARRIER,
 	PROTECT,
 	TOPDOWN_VIEW,
-	HIGHLIGHT_PLAYERS,
-	COMPASS;
+	HIGHLIGHT_PLAYERS;
 	
 	public ItemStack item;
 	

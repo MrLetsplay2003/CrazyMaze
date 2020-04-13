@@ -57,7 +57,7 @@ public enum Message {
 	INGAME_ARENA_LOADING_1("ingame.arena-loading.1", "%prefix% §6Loading arena..."),
 	INGAME_ARENA_LOADING_2("ingame.arena-loading.2", "%prefix% §6Expected loading time: %time%"),
 	INGAME_CANNOT_PASS("ingame.cannot-pass", "%prefix% §cYou cannot pass through that wall"),
-	INGAME_CANNOT_CREATE_BARRIER("ingame.cannot-create-barrier", "%prefix% §cYou cannot build a barrier there"),
+	INGAME_CANNOT_CREATE_BARRIER("ingame.cannot-create-barrier", "%prefix% §cThere is already a wall behind you"),
 	INGAME_KICK_RESTART("ingame.kick-restart", "%prefix% §cYou were kicked from the game because the plugin is restarting"),
 
 	OTHER_NOT_INGAME("other.not-ingame", "%prefix% §cYou are currently not ingame"),
