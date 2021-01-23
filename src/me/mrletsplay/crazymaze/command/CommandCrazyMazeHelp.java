@@ -23,7 +23,7 @@ public class CommandCrazyMazeHelp extends BukkitCommand {
 		setDescription("Shows help about a command");
 		setUsage("/crazymaze help [command...]");
 		
-		setTabCompleter((command, label, args) -> {
+		setTabCompleter((sender, command, label, args) -> {
 			Command c = getCommand(args);
 			
 			if(c == null) return Collections.emptyList();

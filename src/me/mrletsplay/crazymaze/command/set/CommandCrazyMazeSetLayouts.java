@@ -24,7 +24,7 @@ public class CommandCrazyMazeSetLayouts extends BukkitCommand {
 		setDescription("Sets an arena's layouts which can be voted for before the game starts");
 		setUsage("/crazymaze set layouts [layout1 layout2...]");
 		
-		setTabCompleter((command, label, args) -> {
+		setTabCompleter((sender, command, label, args) -> {
 			return Config.getLayouts().stream()
 					.filter(l -> Arrays.binarySearch(args, l) < 0)
 					.collect(Collectors.toList());

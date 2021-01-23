@@ -22,7 +22,7 @@ public class CommandCrazyMazeCreate extends BukkitCommand {
 		setDescription("Create an arena");
 		setUsage("/crazymaze create <name> [arena to copy]");
 		
-		setTabCompleter((command, label, args) -> {
+		setTabCompleter((sender, command, label, args) -> {
 			if(args.length != 1) return Collections.emptyList();
 			
 			return Config.arenas.stream()

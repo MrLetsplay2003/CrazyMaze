@@ -24,7 +24,7 @@ public class CommandCrazyMazeEdit extends BukkitCommand {
 		setDescription("Edit an arena");
 		setUsage("/crazymaze edit <name>");
 		
-		setTabCompleter((command, label, args) -> {
+		setTabCompleter((sender, command, label, args) -> {
 			if(args.length != 0) return Collections.emptyList();
 			
 			return Config.arenas.stream()

@@ -22,7 +22,7 @@ public class CommandCrazyMazeSetPowerups extends BukkitCommand {
 		setDescription("Sets whether powerups are enabled for an arena");
 		setUsage("/crazymaze set powerups <true/false>");
 		
-		setTabCompleter((command, label, args) -> {
+		setTabCompleter((sender, command, label, args) -> {
 			return args.length == 0 ? Arrays.asList("true", "false") : Collections.emptyList();
 		});
 	}

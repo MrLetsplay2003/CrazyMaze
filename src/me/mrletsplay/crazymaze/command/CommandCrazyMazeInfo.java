@@ -21,7 +21,7 @@ public class CommandCrazyMazeInfo extends BukkitCommand {
 		setDescription("Shows information about an arena");
 		setUsage("/crazymaze info <name>");
 		
-		setTabCompleter((command, label, args) -> {
+		setTabCompleter((sender, command, label, args) -> {
 			if(args.length != 0) return Collections.emptyList();
 			
 			return Config.arenas.stream()

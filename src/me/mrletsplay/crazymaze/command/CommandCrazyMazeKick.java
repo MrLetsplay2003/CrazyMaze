@@ -23,7 +23,7 @@ public class CommandCrazyMazeKick extends BukkitCommand {
 		setDescription("Kick a player from their current game");
 		setUsage("/crazymaze kick <Player>");
 		
-		setTabCompleter((command, label, args) -> {
+		setTabCompleter((sender, command, label, args) -> {
 			if(args.length != 0) return Collections.emptyList();
 			
 			return Games.getGames().stream()
