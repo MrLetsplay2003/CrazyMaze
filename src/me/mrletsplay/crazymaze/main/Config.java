@@ -94,7 +94,7 @@ public class Config {
 	}
 	
 	public static boolean matchesItem(ItemStack it, ItemStack other) {
-		return ItemUtils.compareItems(it, other).matches(ComparisonParameter.ALL_APPLICABLE);
+		return ItemUtils.compareItems(it, other).matches(ComparisonParameter.NAME, ComparisonParameter.DURABILITY, ComparisonParameter.TYPE, ComparisonParameter.LORE);
 	}
 	
 	public static void init(){

@@ -9,6 +9,7 @@ import java.util.Random;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -72,6 +73,7 @@ public class Game {
 	public void addPlayer(Player p) {
 		players.add(p);
 		p.teleport(arena.getGameLobby());
+		p.setGameMode(GameMode.ADVENTURE);
 		p.setFoodLevel(20);
 		p.setHealth(20);
 		Tools.clearPlayer(p, true);

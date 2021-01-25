@@ -49,6 +49,18 @@ public class MazeGenerator {
 			}
 		}
 		
+		MazeCell one = layer.getCell(layer.getSizeX() - 1, 0);
+		one.removeWall(MazeDirection.DOWN);
+		one.getRelative(MazeDirection.DOWN).removeWall(MazeDirection.UP);
+		one.removeWall(MazeDirection.LEFT);
+		one.getRelative(MazeDirection.LEFT).removeWall(MazeDirection.RIGHT);
+		
+		MazeCell two = layer.getCell(0, layer.getSizeY() - 1);
+		two.removeWall(MazeDirection.UP);
+		two.getRelative(MazeDirection.UP).removeWall(MazeDirection.DOWN);
+		two.removeWall(MazeDirection.RIGHT);
+		two.getRelative(MazeDirection.RIGHT).removeWall(MazeDirection.LEFT);
+		
 		reset();
 		return pathToFinish;
 	}

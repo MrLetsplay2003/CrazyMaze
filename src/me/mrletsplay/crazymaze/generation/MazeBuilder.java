@@ -10,6 +10,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.Rotatable;
 import org.bukkit.entity.Entity;
 
@@ -63,6 +64,8 @@ public class MazeBuilder {
 					for(MazeDirection dir : c.getWalls()) {
 						buildWall(Tools.getCellLocation(location, properties, c), dir, cellSize, properties.getWallHeight(), properties.getWallMaterial()).run();
 					}
+					
+					fill(w, location.getBlockX() + fX * cellSize, location.getBlockY() + properties.getWallHeight() + 1, location.getBlockZ() + fY * cellSize, cellSize + properties.getWallWidth(), 1, cellSize + properties.getWallWidth(), new MaterialWithData(Material.BARRIER));
 				});
 			}
 		}
@@ -89,6 +92,22 @@ public class MazeBuilder {
 			Rotatable rot = (Rotatable) loc.getBlock().getBlockData();
 			rot.setRotation(BlockFace.NORTH_WEST);
 			loc.getBlock().setBlockData(rot);
+		});
+		
+		tasks.add(() -> {
+			Location loc = Tools.getCellLocation(location, properties, layer.getCell(layer.getSizeX() - 1, 0));
+			fill(w, loc.getBlockX(), loc.getBlockY() + properties.getWallHeight() + 1, loc.getBlockZ(), properties.getCellSize() + properties.getWallWidth(), 1, properties.getCellSize() + properties.getWallWidth(), properties.getFieldMaterial());
+			
+			fillDirectional(w, loc.getBlockX() + properties.getFieldSize(), loc.getBlockY() + 1, loc.getBlockZ() + 1, 1, properties.getWallHeight() + 1, 1, new MaterialWithData(Material.LADDER), BlockFace.WEST);
+			fillSquare(w, loc.getBlockX(), loc.getBlockY() + properties.getWallHeight() + 2, loc.getBlockZ(), properties.getCellSize() + properties.getWallWidth(), properties.getCellSize() + properties.getWallWidth(), new MaterialWithData(Material.OAK_FENCE));
+			fillSquare(w, loc.getBlockX(), loc.getBlockY() + properties.getWallHeight() + 4, loc.getBlockZ(), properties.getCellSize() + properties.getWallWidth(), properties.getCellSize() + properties.getWallWidth(), new MaterialWithData(Material.BARRIER));
+			
+			Location loc2 = Tools.getCellLocation(location, properties, layer.getCell(0, layer.getSizeY() - 1));
+			fill(w, loc2.getBlockX(), loc2.getBlockY() + properties.getWallHeight() + 1, loc2.getBlockZ(), properties.getCellSize() + properties.getWallWidth(), 1, properties.getCellSize() + properties.getWallWidth(), properties.getFieldMaterial());
+			
+			fillDirectional(w, loc2.getBlockX() + 1, loc2.getBlockY() + 1, loc2.getBlockZ() + properties.getFieldSize(), 1, properties.getWallHeight() + 1, 1, new MaterialWithData(Material.LADDER), BlockFace.EAST);
+			fillSquare(w, loc2.getBlockX(), loc2.getBlockY() + properties.getWallHeight() + 2, loc2.getBlockZ(), properties.getCellSize() + properties.getWallWidth(), properties.getCellSize() + properties.getWallWidth(), new MaterialWithData(Material.OAK_FENCE));
+			fillSquare(w, loc2.getBlockX(), loc2.getBlockY() + properties.getWallHeight() + 4, loc2.getBlockZ(), properties.getCellSize() + properties.getWallWidth(), properties.getCellSize() + properties.getWallWidth(), new MaterialWithData(Material.BARRIER));
 		});
 		
 		return new BuildTask(tasks);
@@ -132,6 +151,30 @@ public class MazeBuilder {
 		}
 	}
 	
+	private static void fillSquare(World world, int x, int y, int z, int w, int d, MaterialWithData type) {
+		for(int cX = x; cX < x + w; cX++) {
+			for(int cZ = z; cZ < z + d; cZ++) {
+				if(cX != x && cX != x + w - 1 && cZ != z && cZ != z + d - 1) continue;
+				BlockUtils.placeBlock(new Location(world, cX, y, cZ), type.getMaterial(), (byte) type.getData());
+			}
+		}
+	}
+	
+	private static void fillDirectional(World world, int x, int y, int z, int w, int h, int d, MaterialWithData type, BlockFace direction) {
+		for(int cX = x; cX < x + w; cX++) {
+			for(int cY = y; cY < y + h; cY++) {
+				for(int cZ = z; cZ < z + d; cZ++) {
+					Location l = new Location(world, cX, cY, cZ);
+					BlockUtils.placeBlock(l, type.getMaterial(), (byte) type.getData());
+					
+					Directional dir = (Directional) l.getBlock().getBlockData();
+					dir.setFacing(direction);
+					l.getBlock().setBlockData(dir);
+				}
+			}
+		}
+	}
+	
 	public static BuildTask resetMaze(Location location, int mazeLayers, int mazeSizeX, int mazeSizeY, int cellSize, int wallHeight) {
 		List<Runnable> tasks = new ArrayList<>();
 		
@@ -139,7 +182,7 @@ public class MazeBuilder {
 			for(int x = 0; x < mazeSizeX; x++) {
 				for(int y = 0; y < mazeSizeY; y++) {
 					final int fLI = lI, fX = x, fY = y;
-					tasks.add(() -> fill(location.getWorld(), location.getBlockX() + fX * cellSize, location.getBlockY() + fLI * (wallHeight + 1), location.getBlockZ() + fY * cellSize, cellSize + 1, wallHeight + 1, cellSize + 1, new MaterialWithData(Material.AIR)));
+					tasks.add(() -> fill(location.getWorld(), location.getBlockX() + fX * cellSize, location.getBlockY() + fLI * (wallHeight + 1), location.getBlockZ() + fY * cellSize, cellSize + 1, wallHeight + 5, cellSize + 1, new MaterialWithData(Material.AIR)));
 				}
 			}
 		}
