@@ -27,6 +27,7 @@ public enum Message {
 	COMMAND_SET_LAYOUTS("command.set.layouts", "%prefix% §aArena layouts set to §7%layouts%"),
 	COMMAND_SET_LAYOUTS_NOT_FOUND("command.set.layouts-not-found", "%prefix% §cCouldn't find layouts: §7%layouts%"),
 	COMMAND_SET_LAYOUTS_DUPLICATE("command.set.layouts-duplicate", "%prefix% §cFound duplicate entries: §7%layouts%"),
+	COMMAND_SET_MODE("command.set.mode", "%prefix% §aMode set to %mode%"),
 	COMMAND_SETUP_INCOMPLETE("command.setup-incomplete", "%prefix% §cArena setup incomplete. Missing: %missing%"),
 	COMMAND_ARENA_SAVED("command.arena-saved", "%prefix% §aArena saved"),
 	COMMAND_CHANGES_DISCARDED("command.changes-discarded", "%prefix% §cChanges discarded"),

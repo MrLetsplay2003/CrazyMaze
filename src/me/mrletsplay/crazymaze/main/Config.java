@@ -15,6 +15,7 @@ import org.bukkit.WorldCreator;
 import org.bukkit.inventory.ItemStack;
 
 import me.mrletsplay.crazymaze.arena.Arena;
+import me.mrletsplay.crazymaze.arena.ArenaGameMode;
 import me.mrletsplay.crazymaze.arena.ArenaLayout;
 import me.mrletsplay.crazymaze.game.Games;
 import me.mrletsplay.crazymaze.generation.BuildTask;
@@ -54,6 +55,7 @@ public class Config {
 		
 	public static double
 		fieldChance,
+		holeyness,
 		dropInterval;
 	
 	public static String
@@ -121,6 +123,8 @@ public class Config {
 											+ "Note that increasing this value might result in server lags for bigger maps");
 		tasksPerTick = config.getInt("generation.tasks-per-tick", 20, true);
 		fieldChance = config.getDouble("generation.field-chance-percent", 1.5D, true)/100D;
+		config.setComment("generation.holeyness", "Increasing this value will increase the amount of randomly created \"holes\" in mazes");
+		holeyness = config.getDouble("generation.holeyness", 0.05D, true);
 		config.setComment("drop-interval", "The drop interval in which powerups should be dropped. (Higher = Slower)\n"
 										 + "The final interval will be calculated as dropInterval/numFields. This way, the drops per time per area will stay approximately constant\n"
 										 + "E.g.: dropInterval = 1000.0 => On a 10x10 (numFields = 10x10 = 100) a powerup will be dropped every 10 seconds");
@@ -246,6 +250,7 @@ public class Config {
 	}
 	
 	public static Arena loadArena(String name) {
+		ArenaGameMode m = ArenaGameMode.valueOf(arenaConfig.getString("arena." + name + ".mode", ArenaGameMode.CLASSIC.name(), false));
 		Location l = arenaConfig.getLocation("arena."+name+".lobby");
 		Location ml = arenaConfig.getLocation("arena."+name+".mainlobby");
 		List<Location> sLocs = arenaConfig.getComplex("arena." + name + ".signs", Complex.list(Location.class));
@@ -258,7 +263,7 @@ public class Config {
 		for(String aName : arenaConfig.getStringList("arena."+name+".layouts")) {
 			layouts.add(arenaLayouts.stream().filter(a -> a.getName().equals(aName)).findFirst().orElse(null));
 		}
-		return new Arena(name, l, ml, sLocs, mP, sz, oW, miP, eP, layouts);
+		return new Arena(name, m, l, ml, sLocs, mP, sz, oW, miP, eP, layouts);
 	}
 	
 	public static void deleteArena(Arena a) {

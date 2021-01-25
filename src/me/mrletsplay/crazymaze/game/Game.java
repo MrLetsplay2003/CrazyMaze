@@ -210,7 +210,7 @@ public class Game {
 		applyLayoutVotes();
 		
 		Bukkit.getScheduler().runTaskAsynchronously(CrazyMaze.plugin, () -> {
-			MazeGenerator generator = new MazeGenerator(0.05);
+			MazeGenerator generator = new MazeGenerator(Config.holeyness);
 			
 			Maze3D m3d = new Maze3D(arena.getSize(), arena.getSize(), 1);
 			MazeLayer layer = m3d.getLayer(0);
@@ -226,6 +226,7 @@ public class Game {
 			MazeBuilderProperties props = new MazeBuilderProperties(
 					2, 1, 3,
 					layout.getFloor(), layout.getWalls(), layout.getBetween(),
+					arena.getMode(),
 					finish,
 					arena.powerupsEnabled(), Config.fieldChance);
 			

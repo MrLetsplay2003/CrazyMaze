@@ -1,33 +1,32 @@
 package me.mrletsplay.crazymaze.command.set;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
+import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import me.mrletsplay.crazymaze.arena.Arena;
+import me.mrletsplay.crazymaze.arena.ArenaGameMode;
 import me.mrletsplay.crazymaze.main.Config;
 import me.mrletsplay.crazymaze.main.CrazyMaze;
 import me.mrletsplay.crazymaze.main.Message;
-import me.mrletsplay.crazymaze.main.Tools;
 import me.mrletsplay.mrcore.bukkitimpl.command.BukkitCommand;
 import me.mrletsplay.mrcore.bukkitimpl.command.BukkitCommandSender;
 import me.mrletsplay.mrcore.command.CommandInvokedEvent;
 
-public class CommandCrazyMazeSetLayouts extends BukkitCommand {
+public class CommandCrazyMazeSetMode extends BukkitCommand {
 
-	public CommandCrazyMazeSetLayouts() {
-		super("layouts");
+	public CommandCrazyMazeSetMode() {
+		super("mode");
 		
-		setDescription("Sets an arena's layouts which can be voted for before the game starts");
-		setUsage("/crazymaze set layouts [layout1 layout2...]");
+		setDescription("Sets the CrazyMaze game mode in this arena");
+		setUsage("/crazymaze set mode <mode>");
 		
 		setTabCompleter((sender, command, label, args) -> {
-			return Config.getLayouts().stream()
-					.filter(l -> Arrays.stream(args).noneMatch(l::equalsIgnoreCase))
-					.collect(Collectors.toList());
+			return args.length == 0 ? Arrays.stream(GameMode.values()).map(GameMode::name).collect(Collectors.toList()) : Collections.emptyList();
 		});
 	}
 	
@@ -53,26 +52,21 @@ public class CommandCrazyMazeSetLayouts extends BukkitCommand {
 			return;
 		}
 		
-		if(args.length < 1) {
+		if(args.length != 1) {
 			sendCommandInfo(event.getSender());
 			return;
 		}
 		
 		Arena a = CrazyMaze.arenas.get(p.getUniqueId());
-		List<String> layouts = Arrays.asList(args);
-		List<String> dups = Tools.getDuplicates(layouts);
-		
-		if(!dups.isEmpty()) {
-			p.sendMessage(Config.getMessage(Message.COMMAND_SET_LAYOUTS_DUPLICATE, "layouts", dups.toString()));
-			return;
-		}
-		
-		List<String> nF = a.setLayouts(layouts);
-		if(nF.isEmpty()) {
+		try {
+			ArenaGameMode mode = ArenaGameMode.valueOf(args[0].toUpperCase());
+			a.setGameMode(mode);
+			a.updateSign();
 			CrazyMaze.arenas.put(p.getUniqueId(), a);
-			p.sendMessage(Config.getMessage(Message.COMMAND_SET_LAYOUTS, "layouts", layouts.toString()));
-		}else {
-			p.sendMessage(Config.getMessage(Message.COMMAND_SET_LAYOUTS_NOT_FOUND, "layouts", nF.toString()));
+			p.sendMessage(Config.getMessage(Message.COMMAND_SET_MODE, "mode", mode.name().toLowerCase()));
+		}catch(Exception e) {
+			e.printStackTrace();
+			sendCommandInfo(event.getSender());
 		}
 	}
 

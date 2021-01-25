@@ -16,6 +16,7 @@ public class CommandCrazyMazeSet extends BukkitCommand {
 		addSubCommand(new CommandCrazyMazeSetMainLobby());
 		addSubCommand(new CommandCrazyMazeSetMaxPlayers());
 		addSubCommand(new CommandCrazyMazeSetMinPlayers());
+		addSubCommand(new CommandCrazyMazeSetMode());
 		addSubCommand(new CommandCrazyMazeSetOnWin());
 		addSubCommand(new CommandCrazyMazeSetPowerups());
 		addSubCommand(new CommandCrazyMazeSetSign());

@@ -19,6 +19,7 @@ import me.mrletsplay.crazymaze.main.Message;
 public class Arena {
 
 	private String name;
+	private ArenaGameMode mode;
 	private Location gameLobby, mainLobby;
 	private List<Location> signLocations;
 	private int maxPlayers, size, minPlayers;
@@ -29,12 +30,13 @@ public class Arena {
 	
 	public Arena(String name) {
 		this.name = name;
+		this.mode = ArenaGameMode.CLASSIC;
 		this.mainLobby = Config.config.getLocation("settings.defaultmainlobby");
 		this.signLocations = new ArrayList<>();
 		this.isReady = true;
 	}
 	
-	public Arena(String name, Location gameLobby, Location mainLobby, List<Location> signLocations, int maxPlayers, int size, String onWin, int minPlayers, boolean powerups, List<ArenaLayout> layouts) {
+	public Arena(String name, ArenaGameMode mode, Location gameLobby, Location mainLobby, List<Location> signLocations, int maxPlayers, int size, String onWin, int minPlayers, boolean powerups, List<ArenaLayout> layouts) {
 		this.name = name;
 		this.gameLobby = gameLobby;
 		this.mainLobby = mainLobby;
@@ -56,12 +58,16 @@ public class Arena {
 		});
 	}
 	
-	public Arena(String name, Location gameLobby, Location mainLobby, int maxPlayers, int size, String onWin, int minPlayers, boolean powerups, List<ArenaLayout> layouts) {
-		this(name, gameLobby, mainLobby, new ArrayList<>(), maxPlayers, size, onWin, minPlayers, powerups, layouts);
+	public Arena(String name, ArenaGameMode mode, Location gameLobby, Location mainLobby, int maxPlayers, int size, String onWin, int minPlayers, boolean powerups, List<ArenaLayout> layouts) {
+		this(name, mode, gameLobby, mainLobby, new ArrayList<>(), maxPlayers, size, onWin, minPlayers, powerups, layouts);
 	}
 	
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	public void setGameMode(ArenaGameMode gameMode) {
+		this.mode = gameMode;
 	}
 	
 	public void setGameLobby(Location gameLobby) {
@@ -118,6 +124,10 @@ public class Arena {
 	
 	public String getName() {
 		return name;
+	}
+	
+	public ArenaGameMode getMode() {
+		return mode;
 	}
 	
 	public Location getGameLobby() {
@@ -207,7 +217,7 @@ public class Arena {
 	}
 	
 	public Arena clone() {
-		Arena newArena = new Arena(name, gameLobby, mainLobby, maxPlayers, size, onWin, minPlayers, enablePowerups, layouts);
+		Arena newArena = new Arena(name, mode, gameLobby, mainLobby, maxPlayers, size, onWin, minPlayers, enablePowerups, layouts);
 		newArena.signLocations.addAll(signLocations);
 		return newArena;
 	}
