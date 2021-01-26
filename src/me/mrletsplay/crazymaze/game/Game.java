@@ -1,14 +1,19 @@
 package me.mrletsplay.crazymaze.game;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -42,6 +47,7 @@ public class Game {
 	private List<Player> players;
 	private BuiltArena builtArena;
 	private Map<UUID, VotingData> votes;
+	private Map<UUID, Set<ChatColor>> collectedStamps;
 	
 	private double
 		itemBuf = 0,
@@ -55,6 +61,7 @@ public class Game {
 		this.countdown = -1;
 		this.r = new Random();
 		this.votes = new HashMap<>();
+		this.collectedStamps = new HashMap<>();
 		this.dropsPerSecond = 1 / (Config.dropInterval / (double) (arena.getSize() * arena.getSize()));
 		players = new ArrayList<>();
 		if(arena.getLayouts().size() <= 3) {
@@ -165,6 +172,7 @@ public class Game {
 		}
 		
 		votes.remove(p.getUniqueId());
+		collectedStamps.remove(p.getUniqueId());
 		
 		for(Player pl : players) {
 			pl.sendMessage(Config.getMessage(Message.INGAME_PLAYER_LEFT, "player", p.getName(), "currplayers", ""+players.size(), "maxplayers", ""+arena.getMaxPlayers()));
@@ -223,12 +231,68 @@ public class Game {
 			
 			Location arenaLocation = Tools.getNextSpiralLocation();
 			
-			MazeBuilderProperties props = new MazeBuilderProperties(
-					2, 1, 3,
-					layout.getFloor(), layout.getWalls(), layout.getBetween(),
-					arena.getMode(),
-					finish,
-					arena.powerupsEnabled(), Config.fieldChance);
+			MazeBuilderProperties props;
+			switch(arena.getMode()) {
+				case FOUR_STAMPS:
+				{
+					List<MazeCell> cells = new ArrayList<>(4);
+					
+					List<MazeCell> allCells = Arrays.stream(layer.getCells()).flatMap(Arrays::stream)
+							.filter(c -> !c.coordinatesEqual(layer.getSizeX() - 1, 0) // Exclude corner cells as well as start cell
+									&& !c.coordinatesEqual(0, layer.getSizeY() - 1)
+									&& !c.coordinatesEqual(0, 0))
+							.filter(c -> c.getWalls().size() > 0) // Exclude tiles with no walls
+							.collect(Collectors.toCollection(ArrayList::new));
+					
+					Collections.shuffle(allCells);
+					
+					List<MazeCell> deadEnds =  allCells.stream()
+							.filter(c -> c.getWalls().size() == 3) // Find dead ends
+							.collect(Collectors.toList());
+					
+					for(int x = 0; x < 2; x++) {
+						for(int y = 0; y < 2; y++) {
+							int fX = x, fY = y;
+							// Find one cell for each quarter of the map
+							MazeCell d = deadEnds.stream()
+									.filter(c -> c.getX() >= fX * layer.getSizeX() / 2 && c.getX() <= (fX + 1) * layer.getSizeX() / 2
+											&& c.getY() >= fY * layer.getSizeY() / 2 && c.getY() <= (fY + 1) * layer.getSizeY() / 2)
+									.filter(c -> !cells.contains(c))
+									.findFirst().orElse(null);
+							
+							if(d == null) { // If there's no dead end in that quarter
+								d = allCells.stream()
+										.filter(c -> c.getX() >= fX * layer.getSizeX() / 2 && c.getX() <= (fX + 1) * layer.getSizeX() / 2
+												&& c.getY() >= fY * layer.getSizeY() / 2 && c.getY() <= (fY + 1) * layer.getSizeY() / 2)
+										.filter(c -> !cells.contains(c))
+										.findFirst().orElse(null);
+							}
+							
+							cells.add(d);
+						}
+					}
+					
+					props = new MazeBuilderProperties(
+							2, 1, 3,
+							layout.getFloor(), layout.getWalls(), layout.getBetween(),
+							arena.getMode(),
+							cells.get(0), cells.get(1), cells.get(2), cells.get(3),
+							arena.powerupsEnabled(), Config.fieldChance);
+					break;
+				}
+				case CLASSIC:
+				default:
+				{
+					props = new MazeBuilderProperties(
+							2, 1, 3,
+							layout.getFloor(), layout.getWalls(), layout.getBetween(),
+							arena.getMode(),
+							finish,
+							arena.powerupsEnabled(), Config.fieldChance);
+					break;
+				}
+			}
+			
 			
 			BuildTask buildTask = MazeBuilder.buildLayer(arenaLocation, layer, props);
 			buildTask.execute(Config.tasksPerTick, () -> {
@@ -404,6 +468,15 @@ public class Game {
 	
 	public void setVotingData(Player p, VotingData d) {
 		votes.put(p.getUniqueId(), d);
+	}
+	
+	public Set<ChatColor> getCollectedStamps(Player p) {
+		Set<ChatColor> c = collectedStamps.get(p.getUniqueId());
+		if(c == null) {
+			c = new HashSet<>();
+			collectedStamps.put(p.getUniqueId(), c);
+		}
+		return c;
 	}
 	
 	public static class VotingData{

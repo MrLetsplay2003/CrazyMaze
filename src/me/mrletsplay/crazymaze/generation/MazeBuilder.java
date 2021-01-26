@@ -1,10 +1,12 @@
 package me.mrletsplay.crazymaze.generation;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -14,6 +16,7 @@ import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.Rotatable;
 import org.bukkit.entity.Entity;
 
+import me.mrletsplay.crazymaze.arena.ArenaGameMode;
 import me.mrletsplay.crazymaze.main.Config;
 import me.mrletsplay.crazymaze.main.CrazyMaze;
 import me.mrletsplay.crazymaze.main.MaterialWithData;
@@ -59,6 +62,26 @@ public class MazeBuilder {
 						field = PowerupField.values()[r.nextInt(PowerupField.values().length)].materialWithData;
 					}
 					
+					if(c.equals(properties.getRedCell())) {
+						field = new MaterialWithData(Material.RED_CONCRETE);
+						placeStampSign(location, layer, c, properties, ChatColor.RED);
+					}
+					
+					if(c.equals(properties.getBlueCell())) {
+						field = new MaterialWithData(Material.BLUE_CONCRETE);
+						placeStampSign(location, layer, c, properties, ChatColor.BLUE);
+					}
+					
+					if(c.equals(properties.getGreenCell())) {
+						field = new MaterialWithData(Material.GREEN_CONCRETE);
+						placeStampSign(location, layer, c, properties, ChatColor.GREEN);
+					}
+					
+					if(c.equals(properties.getYellowCell())) {
+						field = new MaterialWithData(Material.YELLOW_CONCRETE);
+						placeStampSign(location, layer, c, properties, ChatColor.YELLOW);
+					}
+					
 					fill(w, location.getBlockX() + fX * cellSize, location.getBlockY(), location.getBlockZ() + fY * cellSize, cellSize, 1, cellSize, field);
 					
 					for(MazeDirection dir : c.getWalls()) {
@@ -80,19 +103,37 @@ public class MazeBuilder {
 			tasks.add(() -> fill(w, location.getBlockX(), location.getBlockY(), location.getBlockZ() + fY * cellSize, layer.getSizeX() * cellSize + 1, 1, 1, properties.getSubWallMaterial()));
 		}
 		
-		tasks.add(() -> {
-			Location loc = Tools.getCellLocation(location, properties, properties.getFinishSignCell()).add(properties.getFieldSize(), 1, properties.getFieldSize());
-			BlockUtils.placeBlock(loc, VersionedMaterial.OAK_SIGN_BLOCK);
-			
-			Sign sign = (Sign) loc.getBlock().getState();
-			sign.setLine(0, Config.getMessage(Message.SIGN_FINISH_LINE_1));
-			sign.setLine(1, Config.getMessage(Message.SIGN_FINISH_LINE_2));
-			sign.update();
-			
-			Rotatable rot = (Rotatable) loc.getBlock().getBlockData();
-			rot.setRotation(BlockFace.NORTH_WEST);
-			loc.getBlock().setBlockData(rot);
-		});
+		if(properties.getFinishSignCell() != null) {
+			tasks.add(() -> {
+				Location loc = Tools.getCellLocation(location, properties, properties.getFinishSignCell()).add(properties.getFieldSize(), 1, properties.getFieldSize());
+				BlockUtils.placeBlock(loc, VersionedMaterial.OAK_SIGN_BLOCK);
+				
+				Sign sign = (Sign) loc.getBlock().getState();
+				sign.setLine(0, Config.getMessage(Message.SIGN_FINISH_LINE_1));
+				sign.setLine(1, Config.getMessage(Message.SIGN_FINISH_LINE_2));
+				sign.update();
+				
+				Rotatable rot = (Rotatable) loc.getBlock().getBlockData();
+				rot.setRotation(BlockFace.NORTH_WEST);
+				loc.getBlock().setBlockData(rot);
+			});
+		}
+		
+		if(properties.getMode() == ArenaGameMode.FOUR_STAMPS) {
+			tasks.add(() -> {
+				Location loc = Tools.getCellLocation(location, properties, layer.getCell(0, 0)).add(properties.getWallWidth(), 1, properties.getWallWidth());
+				BlockUtils.placeBlock(loc, VersionedMaterial.OAK_SIGN_BLOCK);
+				
+				Sign sign = (Sign) loc.getBlock().getState();
+				sign.setLine(0, Config.getMessage(Message.SIGN_FINISH_LINE_1));
+				sign.setLine(1, Config.getMessage(Message.SIGN_FINISH_LINE_2));
+				sign.update();
+				
+				Rotatable rot = (Rotatable) loc.getBlock().getBlockData();
+				rot.setRotation(BlockFace.SOUTH_EAST);
+				loc.getBlock().setBlockData(rot);
+			});
+		}
 		
 		tasks.add(() -> {
 			Location loc = Tools.getCellLocation(location, properties, layer.getCell(layer.getSizeX() - 1, 0));
@@ -139,6 +180,49 @@ public class MazeBuilder {
 				return () -> fill(cellLocation.getWorld(), cellLocation.getBlockX() + fieldSize + wallWidth, cellLocation.getBlockY() + 1, cellLocation.getBlockZ() + 1, 1, wallHeight, fieldSize, wallMaterial);
 		}
 		throw new IllegalArgumentException("Invalid direction");
+	}
+	
+	private static void placeStampSign(Location arenaLocation, MazeLayer layer, MazeCell cell, MazeBuilderProperties properties, ChatColor color) {
+		MazeDirection d = cell.getWalls().stream().findFirst().orElse(null);
+		
+		List<MazeDirection> ds = new ArrayList<>(cell.getWalls());
+		if(ds.size() == 3) {
+			d = Arrays.stream(MazeDirection.values())
+					.filter(md -> !ds.contains(md))
+					.findFirst().orElse(null).getOpposite();
+		}
+		
+		Location l = Tools.getCellLocation(arenaLocation, properties, cell);
+		BlockFace f = BlockFace.NORTH;
+		switch(d) {
+			case UP:
+				l.add(1, 2, 1);
+				f = BlockFace.SOUTH;
+				break;
+			case DOWN:
+				l.add(1, 2, properties.getCellSize() - 1);
+				f = BlockFace.NORTH;
+				break;
+			case LEFT:
+				l.add(1, 2, 1);
+				f = BlockFace.EAST;
+				break;
+			case RIGHT:
+				l.add(properties.getCellSize() - 1, 2, 1);
+				f = BlockFace.WEST;
+				break;
+		}
+		
+		BlockUtils.placeBlock(l, Material.OAK_WALL_SIGN, (byte) 0);
+		
+		Sign sign = (Sign) l.getBlock().getState();
+		sign.setLine(0, Config.getMessage(Message.valueOf("SIGN_STAMP_" + color.name())));
+//		sign.setLine(1, Config.getMessage(Message.SIGN_FINISH_LINE_2));
+		sign.update();
+		
+		Directional rot = (Directional) l.getBlock().getBlockData();
+		rot.setFacing(f);
+		l.getBlock().setBlockData(rot);
 	}
 	
 	private static void fill(World world, int x, int y, int z, int w, int h, int d, MaterialWithData type) {

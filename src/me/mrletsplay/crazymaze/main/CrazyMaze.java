@@ -30,7 +30,7 @@ public class CrazyMaze extends JavaPlugin {
 		MrCoreBukkitImpl.loadMrCore(this);
 		
 		if(Bukkit.getPluginManager().isPluginEnabled("Multiverse-Core")) {
-			getLogger().info("Please make sure to remove the CrazyMaze world from the Multiverse config using \"/mvremove CrazyMaze\" or else the generation might mess up");
+			getLogger().info("Please make sure to disable auto-loading for the CrazyMaze world in Multiverse's worlds.yml or else the generation might mess up");
 			getLogger().info("Alternatively, you can import the world into Multiverse using the generator \"CrazyMaze\"");
 		}
 		

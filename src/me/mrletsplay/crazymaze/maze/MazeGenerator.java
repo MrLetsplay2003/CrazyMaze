@@ -49,6 +49,7 @@ public class MazeGenerator {
 			}
 		}
 		
+		// Make sure that the corner towers are accessible from both sides
 		MazeCell one = layer.getCell(layer.getSizeX() - 1, 0);
 		one.removeWall(MazeDirection.DOWN);
 		one.getRelative(MazeDirection.DOWN).removeWall(MazeDirection.UP);

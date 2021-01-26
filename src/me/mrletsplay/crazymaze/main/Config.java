@@ -228,6 +228,7 @@ public class Config {
 		if(!ss.isEmpty()) return ss;
 		
 		String n = a.getName();
+		arenaConfig.set("arena." + n + ".mode", a.getMode().name());
 		arenaConfig.set("arena."+n+".lobby", a.getGameLobby());
 		arenaConfig.set("arena."+n+".mainlobby", a.getMainLobby());
 		arenaConfig.set("arena."+n+".signs", a.getSignLocations());

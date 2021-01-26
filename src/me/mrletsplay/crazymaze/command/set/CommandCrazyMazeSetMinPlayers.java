@@ -63,7 +63,6 @@ public class CommandCrazyMazeSetMinPlayers extends BukkitCommand {
 				p.sendMessage(Config.getMessage(Message.COMMAND_SET_MORE_PLAYERS));
 			}
 		}catch(Exception e) {
-			e.printStackTrace();
 			sendCommandInfo(event.getSender());
 		}
 	}

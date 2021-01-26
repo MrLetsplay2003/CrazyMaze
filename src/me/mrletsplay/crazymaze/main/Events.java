@@ -1,6 +1,7 @@
 package me.mrletsplay.crazymaze.main;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Sign;
@@ -37,17 +38,50 @@ public class Events implements Listener{
 		if(e.getAction().equals(Action.RIGHT_CLICK_BLOCK) && e.getClickedBlock().getState() instanceof Sign) {
 			Sign s = (Sign) e.getClickedBlock().getState();
 			Game game = Games.getGame(e.getPlayer());
-			if(game != null && game.getStage().equals(GameStage.RUNNING)
-					&& game.getBuiltArena().getBuilderProperties().getFinishSignCell().equals(Tools.getCell(game, e.getClickedBlock().getLocation()))) {
-				Player winner = e.getPlayer();
-				for(Player p : game.getPlayers()) {
-					p.sendMessage(Config.getMessage(Message.INGAME_END_WIN, "winner", winner.getDisplayName()));
+			if(game != null && game.getStage().equals(GameStage.RUNNING)) {
+				
+				MazeCell cell = Tools.getCell(game, e.getClickedBlock().getLocation());
+				if(cell.equals(game.getBuiltArena().getBuilderProperties().getFinishSignCell())
+						|| (cell.getX() == 0 && cell.getY() == 0 && game.getCollectedStamps(e.getPlayer()).size() == 4)) {
+					Player winner = e.getPlayer();
+					for(Player p : game.getPlayers()) {
+						p.sendMessage(Config.getMessage(Message.INGAME_END_WIN, "winner", winner.getDisplayName()));
+					}
+					
+					game.stop(false);
+					if(game.getArena().getOnWin() != null) Bukkit.dispatchCommand(Bukkit.getConsoleSender(), game.getArena().getOnWin()
+							.replace("%winner%", winner.getName())
+							.replace("%winneruuid%", winner.getUniqueId().toString()));
 				}
 				
-				game.stop(false);
-				if(game.getArena().getOnWin() != null) Bukkit.dispatchCommand(Bukkit.getConsoleSender(), game.getArena().getOnWin()
-						.replace("%winner%", winner.getName())
-						.replace("%winneruuid%", winner.getUniqueId().toString()));
+				boolean c = false;
+				if(cell.equals(game.getBuiltArena().getBuilderProperties().getRedCell())
+						&& game.getCollectedStamps(e.getPlayer()).add(ChatColor.RED)) {
+					e.getPlayer().sendMessage(Config.getMessage(Message.INGAME_STAMP_RED));
+					c = true;
+				}
+				
+				if(cell.equals(game.getBuiltArena().getBuilderProperties().getBlueCell())
+						&& game.getCollectedStamps(e.getPlayer()).add(ChatColor.BLUE)) {
+					e.getPlayer().sendMessage(Config.getMessage(Message.INGAME_STAMP_BLUE));
+					c = true;
+				}
+				
+				if(cell.equals(game.getBuiltArena().getBuilderProperties().getGreenCell())
+						&& game.getCollectedStamps(e.getPlayer()).add(ChatColor.GREEN)) {
+					e.getPlayer().sendMessage(Config.getMessage(Message.INGAME_STAMP_GREEN));
+					c = true;
+				}
+				
+				if(cell.equals(game.getBuiltArena().getBuilderProperties().getYellowCell())
+						&& game.getCollectedStamps(e.getPlayer()).add(ChatColor.YELLOW)) {
+					e.getPlayer().sendMessage(Config.getMessage(Message.INGAME_STAMP_YELLOW));
+					c = true;
+				}
+				
+				if(c && game.getCollectedStamps(e.getPlayer()).size() == 4) {
+					e.getPlayer().sendMessage(Config.getMessage(Message.INGAME_ALL_STAMPS));
+				}
 			}else {
 				Arena a = Games.getArenaSign(s.getLocation());
 				if(a != null) {

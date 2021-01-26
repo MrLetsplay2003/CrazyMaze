@@ -38,6 +38,7 @@ public class Arena {
 	
 	public Arena(String name, ArenaGameMode mode, Location gameLobby, Location mainLobby, List<Location> signLocations, int maxPlayers, int size, String onWin, int minPlayers, boolean powerups, List<ArenaLayout> layouts) {
 		this.name = name;
+		this.mode = mode;
 		this.gameLobby = gameLobby;
 		this.mainLobby = mainLobby;
 		this.signLocations = signLocations;

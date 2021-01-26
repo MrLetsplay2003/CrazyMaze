@@ -60,6 +60,12 @@ public enum Message {
 	INGAME_CANNOT_PASS("ingame.cannot-pass", "%prefix% §cYou cannot pass through that wall"),
 	INGAME_CANNOT_CREATE_BARRIER("ingame.cannot-create-barrier", "%prefix% §cThere is already a wall behind you"),
 	INGAME_KICK_RESTART("ingame.kick-restart", "%prefix% §cYou were kicked from the game because the plugin is restarting"),
+	
+	INGAME_STAMP_RED("ingame.stamp.red", "§7You collected the §4RED §7stamp"),
+	INGAME_STAMP_BLUE("ingame.stamp.blue", "§7You collected the §1BLUE §7stamp"),
+	INGAME_STAMP_GREEN("ingame.stamp.green", "§7You collected the §2GREEN §7stamp"),
+	INGAME_STAMP_YELLOW("ingame.stamp.yellow", "§7You collected the §eYELLOW §7stamp"),
+	INGAME_ALL_STAMPS("ingame.all-stamps", "§7You've collected all four stamps, hurry back to the start of the maze to win"),
 
 	OTHER_NOT_INGAME("other.not-ingame", "%prefix% §cYou are currently not ingame"),
 	OTHER_ALREADY_INGAME("other.already-ingame", "%prefix% §cYou are already in a game"),
@@ -85,6 +91,11 @@ public enum Message {
 	SIGN_JOIN_LINE_4_WAITING("sign.join.line.4.waiting", "§7Waiting..."),
 	SIGN_JOIN_LINE_4_RUNNING("sign.join.line.4.running", "§aRunning"),
 	SIGN_JOIN_LINE_4_RESTARTING("sign.join.line.4.restarting", "§cRestarting..."),
+	
+	SIGN_STAMP_RED("sign.stamp.red.line.1", "§4Red stamp"),
+	SIGN_STAMP_BLUE("sign.stamp.blue.line.1", "§1Blue stamp"),
+	SIGN_STAMP_GREEN("sign.stamp.green.line.1", "§2Green stamp"),
+	SIGN_STAMP_YELLOW("sign.stamp.yellow.line.1", "§eYellow stamp"),
 
 	SIGN_FINISH_LINE_1("sign.finish.line.1", "§8[§6Crazy§5Maze§8]"),
 	SIGN_FINISH_LINE_2("sign.finish.line.2", "§aFinish"),

@@ -50,7 +50,7 @@ public class CommandCrazyMazeSetSize extends BukkitCommand {
 		Arena a = CrazyMaze.arenas.get(p.getUniqueId());
 		try {
 			int num = Integer.parseInt(args[0]);
-			if(num >= 3) {
+			if(num >= 5) {
 				a.setSize(num);
 				a.updateSign();
 				CrazyMaze.arenas.put(p.getUniqueId(), a);

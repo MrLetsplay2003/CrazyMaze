@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
-import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -26,7 +25,7 @@ public class CommandCrazyMazeSetMode extends BukkitCommand {
 		setUsage("/crazymaze set mode <mode>");
 		
 		setTabCompleter((sender, command, label, args) -> {
-			return args.length == 0 ? Arrays.stream(GameMode.values()).map(GameMode::name).collect(Collectors.toList()) : Collections.emptyList();
+			return args.length == 0 ? Arrays.stream(ArenaGameMode.values()).map(m -> m.name().toLowerCase()).collect(Collectors.toList()) : Collections.emptyList();
 		});
 	}
 	
@@ -65,7 +64,6 @@ public class CommandCrazyMazeSetMode extends BukkitCommand {
 			CrazyMaze.arenas.put(p.getUniqueId(), a);
 			p.sendMessage(Config.getMessage(Message.COMMAND_SET_MODE, "mode", mode.name().toLowerCase()));
 		}catch(Exception e) {
-			e.printStackTrace();
 			sendCommandInfo(event.getSender());
 		}
 	}
