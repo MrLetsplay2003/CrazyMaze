@@ -8,6 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
+import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import me.mrletsplay.crazymaze.arena.Arena;
@@ -27,6 +28,11 @@ public class CrazyMaze extends JavaPlugin {
 	public void onEnable() {
 		plugin = this;
 		MrCoreBukkitImpl.loadMrCore(this);
+		
+		if(Bukkit.getPluginManager().isPluginEnabled("Multiverse-Core")) {
+			getLogger().info("Please make sure to remove the CrazyMaze world from the Multiverse config using \"/mvremove CrazyMaze\" or else the generation might mess up");
+			getLogger().info("Alternatively, you can import the world into Multiverse using the generator \"CrazyMaze\"");
+		}
 		
 		CommandCrazyMaze cm = CommandCrazyMaze.INSTANCE;
 		PluginCommand pc = getCommand("crazymaze");
@@ -112,6 +118,11 @@ public class CrazyMaze extends JavaPlugin {
 			s.sendMessage("§7/cm start §8- Skip the countdown of your current game");
 		}
 		s.sendMessage("§7/cm leave §8- Leave your current game");
+	}
+	
+	@Override
+	public ChunkGenerator getDefaultWorldGenerator(String worldName, String id) {
+		return new CrazyMazeWorldGenerator();
 	}
 	
 }

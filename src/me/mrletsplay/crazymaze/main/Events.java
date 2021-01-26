@@ -18,7 +18,6 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.inventory.EquipmentSlot;
 
 import me.mrletsplay.crazymaze.arena.Arena;
@@ -249,11 +248,12 @@ public class Events implements Listener{
 		}
 	}
 	
-	@EventHandler
-	public void onWeatherChange(WeatherChangeEvent event) {
-		if(event.getWorld().equals(Config.cmWorld)) {
-			event.setCancelled(true);
-		}
-	}
+//	@EventHandler
+//	public void onWeatherChange(WeatherChangeEvent event) {
+//		if(event.getWorld().equals(Config.cmWorld)) {
+//			event.getWorld().setClearWeatherDuration(0);
+//			event.setCancelled(true);
+//		}
+//	}
 	
 }

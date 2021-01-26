@@ -165,6 +165,7 @@ public class Config {
 			cmWorld.setGameRule(GameRule.DO_MOB_SPAWNING, false);
 			cmWorld.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
 			cmWorld.setTime(6000);
+			cmWorld.setClearWeatherDuration(0);
 		}
 		
 		getLayouts().stream().forEach(name -> arenaLayouts.add(loadLayout(name)));
