@@ -393,7 +393,7 @@ public class Game {
 					break;
 			}
 		}else{
-			layout = layouts.get(CrazyMaze.r.nextInt(arena.getLayouts().size()));
+			layout = layouts.get(CrazyMaze.r.nextInt(layouts.size()));
 		}
 	}
 	
