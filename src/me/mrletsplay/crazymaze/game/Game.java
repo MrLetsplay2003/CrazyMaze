@@ -389,11 +389,11 @@ public class Game {
 					layout = layouts.get(2);
 					break;
 				case 3:
-					layout = layouts.get(CrazyMaze.r.nextInt(arena.getLayouts().size()));
+					layout = arena.getLayouts().get(CrazyMaze.r.nextInt(arena.getLayouts().size()));
 					break;
 			}
 		}else{
-			layout = layouts.get(CrazyMaze.r.nextInt(layouts.size()));
+			layout = arena.getLayouts().get(CrazyMaze.r.nextInt(arena.getLayouts().size()));
 		}
 	}
 	
