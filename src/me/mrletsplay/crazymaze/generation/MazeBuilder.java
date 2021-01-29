@@ -56,7 +56,13 @@ public class MazeBuilder {
 				final int fX = x, fY = y;
 				MazeCell c = layer.getCell(x, y);
 				tasks.add(() -> {
-					MaterialWithData field = properties.getFieldMaterial();
+					for(MazeDirection dir : c.getWalls()) {
+						buildWall(Tools.getCellLocation(location, properties, c), dir, cellSize, properties.getWallHeight(), properties.getWallMaterial()).run();
+					}
+					
+					fill(w, location.getBlockX() + fX * cellSize, location.getBlockY() + properties.getWallHeight() + 1, location.getBlockZ() + fY * cellSize, cellSize + properties.getWallWidth(), 1, cellSize + properties.getWallWidth(), new MaterialWithData(Material.BARRIER));
+					
+MaterialWithData field = properties.getFieldMaterial();
 					
 					if(properties.isPowerupFields() && r.nextDouble() < properties.getPowerupFieldChance()) {
 						field = PowerupField.values()[r.nextInt(PowerupField.values().length)].materialWithData;
@@ -83,12 +89,6 @@ public class MazeBuilder {
 					}
 					
 					fill(w, location.getBlockX() + fX * cellSize, location.getBlockY(), location.getBlockZ() + fY * cellSize, cellSize, 1, cellSize, field);
-					
-					for(MazeDirection dir : c.getWalls()) {
-						buildWall(Tools.getCellLocation(location, properties, c), dir, cellSize, properties.getWallHeight(), properties.getWallMaterial()).run();
-					}
-					
-					fill(w, location.getBlockX() + fX * cellSize, location.getBlockY() + properties.getWallHeight() + 1, location.getBlockZ() + fY * cellSize, cellSize + properties.getWallWidth(), 1, cellSize + properties.getWallWidth(), new MaterialWithData(Material.BARRIER));
 				});
 			}
 		}
@@ -223,6 +223,24 @@ public class MazeBuilder {
 		Directional rot = (Directional) l.getBlock().getBlockData();
 		rot.setFacing(f);
 		l.getBlock().setBlockData(rot);
+		
+		switch(d) {
+			case DOWN:
+				l.add(1, -1, 0);
+				break;
+			case UP:
+				l.add(1, -1, 0);
+				break;
+			case LEFT:
+				l.add(0, -1, 1);
+				break;
+			case RIGHT:
+				l.add(0, -1, 1);
+				break;
+		}
+		
+		fill(l.getWorld(), l.getBlockX(), l.getBlockY(), l.getBlockZ(), 1, properties.getWallHeight() + 1, 1, new MaterialWithData(Material.OAK_FENCE));
+		l.add(0, properties.getWallHeight() + 1, 0).getBlock().setType(Material.valueOf(color.name() + "_CONCRETE"));
 	}
 	
 	private static void fill(World world, int x, int y, int z, int w, int h, int d, MaterialWithData type) {
