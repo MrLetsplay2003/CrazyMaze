@@ -13,7 +13,7 @@ import me.mrletsplay.crazymaze.main.Config;
 import me.mrletsplay.crazymaze.main.Message;
 import me.mrletsplay.mrcore.bukkitimpl.command.BukkitCommand;
 import me.mrletsplay.mrcore.bukkitimpl.command.BukkitCommandSender;
-import me.mrletsplay.mrcore.command.CommandInvokedEvent;
+import me.mrletsplay.mrcore.command.event.CommandInvokedEvent;
 
 public class CommandCrazyMazeKick extends BukkitCommand {
 	
@@ -23,8 +23,8 @@ public class CommandCrazyMazeKick extends BukkitCommand {
 		setDescription("Kick a player from their current game");
 		setUsage("/crazymaze kick <Player>");
 		
-		setTabCompleter((sender, command, label, args) -> {
-			if(args.length != 0) return Collections.emptyList();
+		setTabCompleter(event -> {
+			if(event.getArgs().length != 0) return Collections.emptyList();
 			
 			return Games.getGames().stream()
 					.flatMap(g -> g.getPlayers().stream())

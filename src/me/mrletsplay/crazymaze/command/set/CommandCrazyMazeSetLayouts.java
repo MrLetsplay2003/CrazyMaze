@@ -14,7 +14,7 @@ import me.mrletsplay.crazymaze.main.Message;
 import me.mrletsplay.crazymaze.main.Tools;
 import me.mrletsplay.mrcore.bukkitimpl.command.BukkitCommand;
 import me.mrletsplay.mrcore.bukkitimpl.command.BukkitCommandSender;
-import me.mrletsplay.mrcore.command.CommandInvokedEvent;
+import me.mrletsplay.mrcore.command.event.CommandInvokedEvent;
 
 public class CommandCrazyMazeSetLayouts extends BukkitCommand {
 
@@ -24,9 +24,9 @@ public class CommandCrazyMazeSetLayouts extends BukkitCommand {
 		setDescription("Sets an arena's layouts which can be voted for before the game starts");
 		setUsage("/crazymaze set layouts [layout1 layout2...]");
 		
-		setTabCompleter((sender, command, label, args) -> {
+		setTabCompleter(event-> {
 			return Config.getLayouts().stream()
-					.filter(l -> Arrays.stream(args).noneMatch(l::equalsIgnoreCase))
+					.filter(l -> Arrays.stream(event.getArgs()).noneMatch(l::equalsIgnoreCase))
 					.collect(Collectors.toList());
 		});
 	}

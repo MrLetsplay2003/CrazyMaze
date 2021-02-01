@@ -12,7 +12,7 @@ import me.mrletsplay.crazymaze.main.CrazyMaze;
 import me.mrletsplay.crazymaze.main.Message;
 import me.mrletsplay.mrcore.bukkitimpl.command.BukkitCommand;
 import me.mrletsplay.mrcore.bukkitimpl.command.BukkitCommandSender;
-import me.mrletsplay.mrcore.command.CommandInvokedEvent;
+import me.mrletsplay.mrcore.command.event.CommandInvokedEvent;
 
 public class CommandCrazyMazeSetPowerups extends BukkitCommand {
 
@@ -22,8 +22,10 @@ public class CommandCrazyMazeSetPowerups extends BukkitCommand {
 		setDescription("Sets whether powerups are enabled for an arena");
 		setUsage("/crazymaze set powerups <true/false>");
 		
-		setTabCompleter((sender, command, label, args) -> {
-			return args.length == 0 ? Arrays.asList("true", "false") : Collections.emptyList();
+		setTabCompleter(event -> {
+			if(event.getArgs().length != 0) return Collections.emptyList();
+			
+			return Arrays.asList("true", "false");
 		});
 	}
 	

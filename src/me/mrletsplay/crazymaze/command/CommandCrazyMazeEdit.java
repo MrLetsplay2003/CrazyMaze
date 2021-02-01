@@ -14,7 +14,7 @@ import me.mrletsplay.crazymaze.main.CrazyMaze;
 import me.mrletsplay.crazymaze.main.Message;
 import me.mrletsplay.mrcore.bukkitimpl.command.BukkitCommand;
 import me.mrletsplay.mrcore.bukkitimpl.command.BukkitCommandSender;
-import me.mrletsplay.mrcore.command.CommandInvokedEvent;
+import me.mrletsplay.mrcore.command.event.CommandInvokedEvent;
 
 public class CommandCrazyMazeEdit extends BukkitCommand {
 
@@ -24,8 +24,8 @@ public class CommandCrazyMazeEdit extends BukkitCommand {
 		setDescription("Edit an arena");
 		setUsage("/crazymaze edit <name>");
 		
-		setTabCompleter((sender, command, label, args) -> {
-			if(args.length != 0) return Collections.emptyList();
+		setTabCompleter(event -> {
+			if(event.getArgs().length != 0) return Collections.emptyList();
 			
 			return Config.arenas.stream()
 					.map(Arena::getName)

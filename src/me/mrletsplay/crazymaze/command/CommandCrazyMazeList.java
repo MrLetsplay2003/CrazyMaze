@@ -8,7 +8,7 @@ import me.mrletsplay.crazymaze.main.Config;
 import me.mrletsplay.crazymaze.main.Message;
 import me.mrletsplay.mrcore.bukkitimpl.command.BukkitCommand;
 import me.mrletsplay.mrcore.bukkitimpl.command.BukkitCommandSender;
-import me.mrletsplay.mrcore.command.CommandInvokedEvent;
+import me.mrletsplay.mrcore.command.event.CommandInvokedEvent;
 
 public class CommandCrazyMazeList extends BukkitCommand {
 	

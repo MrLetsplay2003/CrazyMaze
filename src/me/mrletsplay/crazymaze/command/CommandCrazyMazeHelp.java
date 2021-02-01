@@ -13,7 +13,7 @@ import me.mrletsplay.crazymaze.main.Message;
 import me.mrletsplay.mrcore.bukkitimpl.command.BukkitCommand;
 import me.mrletsplay.mrcore.bukkitimpl.command.BukkitCommandSender;
 import me.mrletsplay.mrcore.command.Command;
-import me.mrletsplay.mrcore.command.CommandInvokedEvent;
+import me.mrletsplay.mrcore.command.event.CommandInvokedEvent;
 
 public class CommandCrazyMazeHelp extends BukkitCommand {
 
@@ -23,8 +23,8 @@ public class CommandCrazyMazeHelp extends BukkitCommand {
 		setDescription("Shows help about a command");
 		setUsage("/crazymaze help [command...]");
 		
-		setTabCompleter((sender, command, label, args) -> {
-			Command c = getCommand(args);
+		setTabCompleter(event -> {
+			Command c = getCommand(event.getArgs());
 			
 			if(c == null) return Collections.emptyList();
 			

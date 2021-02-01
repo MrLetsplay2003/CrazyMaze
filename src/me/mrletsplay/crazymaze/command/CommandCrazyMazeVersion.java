@@ -10,7 +10,7 @@ import me.mrletsplay.crazymaze.main.UpdateChecker;
 import me.mrletsplay.crazymaze.main.UpdateChecker.Result;
 import me.mrletsplay.mrcore.bukkitimpl.command.BukkitCommand;
 import me.mrletsplay.mrcore.bukkitimpl.command.BukkitCommandSender;
-import me.mrletsplay.mrcore.command.CommandInvokedEvent;
+import me.mrletsplay.mrcore.command.event.CommandInvokedEvent;
 
 public class CommandCrazyMazeVersion extends BukkitCommand {
 	

@@ -4,7 +4,7 @@ import me.mrletsplay.crazymaze.command.set.CommandCrazyMazeSet;
 import me.mrletsplay.crazymaze.main.CrazyMaze;
 import me.mrletsplay.mrcore.bukkitimpl.command.BukkitCommand;
 import me.mrletsplay.mrcore.bukkitimpl.command.BukkitCommandSender;
-import me.mrletsplay.mrcore.command.CommandInvokedEvent;
+import me.mrletsplay.mrcore.command.event.CommandInvokedEvent;
 
 public class CommandCrazyMaze extends BukkitCommand {
 	
